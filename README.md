@@ -1,7 +1,6 @@
-Stroke!
+Stroke! [![Build Status](https://travis-ci.org/Kabelskevalley/s1-chatapp-android.svg?branch=master)](https://travis-ci.org/Kabelskevalley/s1-chatapp-android)
 =======
 *ein Messenger speziell für Schüler*
-
 ----
 
 Im Rahmen der ersten Season der *Kabelskevalley it & technology school* soll eine Android App geschaffen werden, welche einen kanalbasierter Messenger repräsentieren soll. Dieser soll sich besonders nützlich für Schüler erweisen.
