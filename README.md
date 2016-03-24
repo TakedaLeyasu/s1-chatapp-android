@@ -28,4 +28,4 @@ Um folgende Ideen könnte *Stroke!* erweitert werden.
 Lizenz
 ------
 
-*Stroke!* ist unter der Apache License, Version 2.0 lizenziert. Siehe [LICENSE](https://github.com/vainproject/vain/blob/master/LICENSE) für den kompletten Lizenztext.
+*Stroke!* ist unter der Apache License, Version 2.0 lizenziert. Siehe [LICENSE](https://github.com/Kabelskevalley/s1-chatapp-android/blob/master/LICENSE) für den kompletten Lizenztext.
