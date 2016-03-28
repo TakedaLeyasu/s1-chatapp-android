@@ -40,6 +40,8 @@ public class LogInActivity extends AppCompatActivity {
 
     public void register(View view)
     {
+        Intent intent = new Intent(this, RegistrationActivity.class);
+        startActivity(intent);
         //add stuff here
     }
 }

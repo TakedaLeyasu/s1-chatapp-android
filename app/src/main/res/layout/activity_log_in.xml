@@ -74,6 +74,7 @@
         android:layout_alignStart="@+id/button_L"
         android:layout_marginTop="27dp"
         android:layout_alignRight="@+id/editText_P"
-        android:layout_alignEnd="@+id/editText_P" />
+        android:layout_alignEnd="@+id/editText_P"
+        android:onClick="register" />
 
 </RelativeLayout>
