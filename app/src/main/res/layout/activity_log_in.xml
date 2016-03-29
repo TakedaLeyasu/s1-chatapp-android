@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="de.kabelskevalley.doegel.stroke.LogInActivity"
+    android:background="#55bded">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:text="Name"
+        android:ems="10"
+        android:id="@+id/editText_N"
+        android:layout_marginTop="27dp"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:textColor="#000000" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/editText_P"
+        android:layout_marginTop="24dp"
+        android:layout_below="@+id/editText_N"
+        android:layout_alignLeft="@+id/editText_N"
+        android:layout_alignStart="@+id/editText_N"
+        android:textColor="#000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/app_name"
+        android:id="@+id/textView"
+        android:textColor="#dfb003"
+        android:textStyle="bold|italic"
+        android:textSize="70dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignLeft="@+id/editText_N"
+        android:layout_alignStart="@+id/editText_N" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Anmelden"
+        android:id="@+id/button_L"
+        android:layout_marginTop="62dp"
+        android:layout_below="@+id/editText_P"
+        android:layout_alignLeft="@+id/editText_P"
+        android:layout_alignStart="@+id/editText_P"
+        android:textColor="#000000"
+        android:background="#dfb003"
+        android:layout_alignRight="@+id/editText_P"
+        android:layout_alignEnd="@+id/editText_P"
+        android:onClick="logIn" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registrieren"
+        android:id="@+id/button_R"
+        android:textColor="#000000"
+        android:background="#dfb003"
+        android:layout_below="@+id/button_L"
+        android:layout_alignLeft="@+id/button_L"
+        android:layout_alignStart="@+id/button_L"
+        android:layout_marginTop="27dp"
+        android:layout_alignRight="@+id/editText_P"
+        android:layout_alignEnd="@+id/editText_P"
+        android:onClick="register" />
+
+</RelativeLayout>
