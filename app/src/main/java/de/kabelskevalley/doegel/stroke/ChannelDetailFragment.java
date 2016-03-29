@@ -4,10 +4,22 @@ import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URISyntaxException;
 
 import de.kabelskevalley.doegel.stroke.dummy.DummyContent;
 
@@ -25,9 +37,21 @@ public class ChannelDetailFragment extends Fragment {
     public static final String ARG_ITEM_ID = "item_id";
 
     /**
-     * The dummy content this fragment is presenting.
+     * The root view of the current fragment, we keep a reference to find
+     * subviews.
      */
-    private DummyContent.DummyItem mItem;
+    private View mRootView;
+
+    /**
+     * The socket which we connect to. It enables us to listen to all
+     * events our server broadcasts.
+     */
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket("http://10.32.28.95:3000/");
+        } catch (URISyntaxException e) {}
+    }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -41,15 +65,10 @@ public class ChannelDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
-
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(mItem.content);
+                appBarLayout.setTitle("Stroke! chat");
             }
         }
     }
@@ -57,13 +76,50 @@ public class ChannelDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.channel_detail, container, false);
+        mRootView = inflater.inflate(R.layout.channel_detail, container, false);
 
-        // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.channel_detail)).setText(mItem.details);
-        }
-
-        return rootView;
+        return mRootView;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
+
+        mSocket.on("chat message", onNewMessage);
+        mSocket.connect();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mRootView.findViewById(R.id.message_send).setOnClickListener(null);
+
+        mSocket.disconnect();
+        mSocket.off("chat message", onNewMessage);
+    }
+
+    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String message = args[0].toString();
+                    ((TextView) mRootView.findViewById(R.id.channel_detail)).setText(message);
+                }
+            });
+        }
+    };
+
+    private View.OnClickListener onSendClicked = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
+            mSocket.emit("chat message", message.getText());
+            message.setText("");
+        }
+    };
 }
