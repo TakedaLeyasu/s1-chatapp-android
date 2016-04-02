@@ -49,7 +49,7 @@ public class ChannelDetailFragment extends Fragment {
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://10.32.28.95:3000/");
+            mSocket = IO.socket("http://chat.kabelskevalley.com:3000/");
         } catch (URISyntaxException e) {}
     }
 
