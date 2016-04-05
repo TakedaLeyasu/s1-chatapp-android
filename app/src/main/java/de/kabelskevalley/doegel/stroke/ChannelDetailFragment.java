@@ -1,14 +1,14 @@
 package de.kabelskevalley.doegel.stroke;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.Path;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -16,12 +16,7 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.URISyntaxException;
-
-import de.kabelskevalley.doegel.stroke.dummy.DummyContent;
 
 /**
  * A fragment representing a single Channel detail screen.
@@ -35,6 +30,7 @@ public class ChannelDetailFragment extends Fragment {
      * represents.
      */
     public static final String ARG_ITEM_ID = "item_id";
+    public static String message = "";
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -68,7 +64,8 @@ public class ChannelDetailFragment extends Fragment {
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle("Stroke! chat");
+                String header = getArguments().getString(ARG_ITEM_ID);
+                appBarLayout.setTitle(header);
             }
         }
     }
@@ -107,19 +104,21 @@ public class ChannelDetailFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    String message = args[0].toString();
+                    message +="\n\n"+ args[0].toString();
                     ((TextView) mRootView.findViewById(R.id.channel_detail)).setText(message);
                 }
             });
         }
     };
 
+
+
     private View.OnClickListener onSendClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
-            mSocket.emit("chat message", message.getText());
-            message.setText("");
+            EditText message_ET = ((EditText) mRootView.findViewById(R.id.message_text));
+            mSocket.emit("chat message", message_ET.getText());
+            message_ET.setText("");
         }
     };
 }

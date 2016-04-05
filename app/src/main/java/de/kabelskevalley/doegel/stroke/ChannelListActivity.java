@@ -2,21 +2,21 @@ package de.kabelskevalley.doegel.stroke;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-
-import de.kabelskevalley.doegel.stroke.dummy.DummyContent;
 
 import java.util.List;
 
@@ -35,8 +35,8 @@ public class ChannelListActivity extends AppCompatActivity {
      * device.
      */
     private boolean mTwoPane;
+    private boolean delete = false;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_channel_list);
@@ -49,8 +49,14 @@ public class ChannelListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                create_ChannelItem();
+            }
+        });
+        FloatingActionButton fab2 = (FloatingActionButton) findViewById(R.id.fab2);
+        fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                change_bool();
             }
         });
 
@@ -66,54 +72,111 @@ public class ChannelListActivity extends AppCompatActivity {
             mTwoPane = true;
         }
     }
-
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
+    private void change_bool()
+    {
+        FrameLayout layout = (FrameLayout)findViewById(R.id.frameLayout);
+        if(delete == false)
+        {
+            delete = true;
+            layout.setBackgroundColor(Color.RED);
+        }
+        else
+        {
+            delete = false;
+            layout.setBackgroundColor(Color.WHITE);
+        }
     }
 
-    public class SimpleItemRecyclerViewAdapter
+    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(ChannelContent.ITEMS));
+    }
+
+    private void create_ChannelItem() {
+        Intent intent = new Intent(this, NewChannelActivity.class);
+        startActivity(intent);
+
+    }
+
+        public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<DummyContent.DummyItem> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items) {
+
+        private final List<ChannelContent.ChannelItem> mValues;
+        public SimpleItemRecyclerViewAdapter(List<ChannelContent.ChannelItem> items) {
             mValues = items;
         }
 
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.channel_list_content, parent, false);
-            return new ViewHolder(view);
-        }
+            @Override
+            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.channel_list_content, parent, false);
+                return new ViewHolder(view);
+            }
 
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
 
-            holder.mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        arguments.putString(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-                        ChannelDetailFragment fragment = new ChannelDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.channel_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, ChannelDetailActivity.class);
-                        intent.putExtra(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+            @Override
+            public void onBindViewHolder(final ViewHolder holder, int position) {
+                holder.mItem = mValues.get(position);
 
-                        context.startActivity(intent);
+                holder.mContentView.setText(mValues.get(position).content);
+
+
+
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+
+                                                        if(delete == false) {
+                                                            if (mTwoPane) {
+                                                                Bundle arguments = new Bundle();
+                                                                arguments.putString(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.content);
+                                                                ChannelDetailFragment fragment = new ChannelDetailFragment();
+                                                                fragment.setArguments(arguments);
+                                                                getSupportFragmentManager().beginTransaction()
+                                                                        .replace(R.id.channel_detail_container, fragment)
+                                                                        .commit();
+                                                            } else {
+                                                                Context context = v.getContext();
+                                                                Intent intent = new Intent(context, ChannelDetailActivity.class);
+                                                                intent.putExtra(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.content);
+
+                                                                context.startActivity(intent);
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if(holder.mItem.id != 0) {
+                                                                ChannelContent.deleteItem(holder.mItem.id);
+                                                                View recyclerView = findViewById(R.id.channel_list);
+                                                                assert recyclerView != null;
+                                                                setupRecyclerView((RecyclerView) recyclerView);
+                                                            }
+                                                            else
+                                                            {
+                                                                Toast.makeText(ChannelListActivity.this,"Dieser Kanal ist nicht löschbar",Toast.LENGTH_SHORT).show();
+                                                                Toast.makeText(ChannelListActivity.this,"Muhahaha!!! :D",Toast.LENGTH_SHORT).show();        //Unbedingt notwendig!
+                                                            }
+                                                            delete = false;
+                                                            FrameLayout layout = (FrameLayout)findViewById(R.id.frameLayout);
+                                                            layout.setBackgroundColor(Color.TRANSPARENT);
+                                                        }
+                                                    }
+                                                }
+                );
+                holder.mView.setOnLongClickListener(new View.OnLongClickListener(){
+                    @Override
+                    public boolean onLongClick(View v)
+                    {
+                        Toast.makeText(ChannelListActivity.this, holder.mItem.details, Toast.LENGTH_LONG).show();
+                        return true;
                     }
-                }
-            });
+
+                });
+
         }
+
+
 
         @Override
         public int getItemCount() {
@@ -122,15 +185,15 @@ public class ChannelListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
             public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
+            public final ImageView mImageView;
+            public ChannelContent.ChannelItem mItem;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
                 mContentView = (TextView) view.findViewById(R.id.content);
+                mImageView = (ImageView) view.findViewById(R.id.imageView);
             }
 
             @Override

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Stroke!</string>
     <string name="title_channel_detail">Channel Detail</string>
+    <string name="title_activity_new_channel_item">NewChannelItemActivity</string>
 </resources>
