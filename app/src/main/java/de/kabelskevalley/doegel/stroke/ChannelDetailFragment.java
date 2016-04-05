@@ -21,8 +21,6 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
-import de.kabelskevalley.doegel.stroke.dummy.DummyContent;
-
 /**
  * A fragment representing a single Channel detail screen.
  * This fragment is either contained in a {@link ChannelListActivity}
