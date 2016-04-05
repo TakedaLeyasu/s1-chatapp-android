@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.kabelskevalley.doegel.stroke">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,7 +23,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.kabelskevalley.doegel.stroke.ChannelListActivity" />
         </activity>
-        <activity android:name=".LogInActivity">
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
