@@ -12,7 +12,7 @@
     tools:context="de.kabelskevalley.doegel.stroke.ChannelListActivity">
 
     <!--
-    This layout is a two-pane layout for the Channels
+    This layout is a two-pane layout for the Channel
     master/detail flow.
     
     -->
