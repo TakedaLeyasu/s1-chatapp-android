@@ -120,7 +120,7 @@ public class ChannelDetailFragment extends Fragment {
         }
     };
 
-    private View.OnClickListener onSendClicked = new View.OnClickListener() {
+    public View.OnClickListener onSendClicked = new View.OnClickListener() {    //public damit Fab darauf zugreifen kann
         @Override
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
