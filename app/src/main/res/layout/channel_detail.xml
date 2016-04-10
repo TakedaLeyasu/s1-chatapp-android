@@ -9,12 +9,19 @@
 
     <ListView
         android:layout_width="match_parent"
+
         android:layout_height="185dp"
         android:id="@+id/listView"
         android:layout_gravity="center_horizontal"
         android:layout_weight="0.95"
         android:smoothScrollbar="true"
         android:stackFromBottom="true"
+        android:nestedScrollingEnabled="true" />
+
+
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textIsSelectable="true"
         android:nestedScrollingEnabled="true" />
 
 
@@ -28,6 +35,6 @@
         android:id="@+id/message_send"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Send"/>
+        android:text="Send" />
 
 </LinearLayout>
