@@ -31,7 +31,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".RegistrationActivity" />
-        <activity android:name=".NewChannelActivity"></activity>
     </application>
 
 </manifest>
