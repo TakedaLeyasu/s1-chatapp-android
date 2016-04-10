@@ -1,25 +1,23 @@
 package de.kabelskevalley.doegel.stroke;
 
 import android.app.Activity;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A fragment representing a single Channel detail screen.
@@ -33,6 +31,7 @@ public class ChannelDetailFragment extends Fragment {
      * represents.
      */
     public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_ITEM_NAME = "item_name";
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -66,7 +65,14 @@ public class ChannelDetailFragment extends Fragment {
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle("Stroke! chat");
+
+
+                if (appBarLayout != null) {
+                    if(getArguments().containsKey(ARG_ITEM_NAME))
+                        appBarLayout.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));   //AppBar zeigt Channel Namen an
+                    else
+                        appBarLayout.setTitle(getArguments().getCharSequence("Stroke! chat "));
+                }
             }
         }
     }
@@ -106,7 +112,9 @@ public class ChannelDetailFragment extends Fragment {
                 @Override
                 public void run() {
                     String message = args[0].toString();
-                    ((TextView) mRootView.findViewById(R.id.channel_detail)).setText(message);
+                    //((TextView) mRootView.findViewById(R.id.channel_detail)).setText(message);
+                    message_list.add(message);
+                    show_messages();
                 }
             });
         }
@@ -117,7 +125,26 @@ public class ChannelDetailFragment extends Fragment {
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
             mSocket.emit("chat message", message.getText());
+
+
             message.setText("");
         }
     };
+
+    private List<String> message_list = new ArrayList<>();
+
+    public void show_messages()
+    {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                getActivity(),
+                R.layout.message_view_item,
+                R.id.message_item,
+                message_list);
+
+        ListView listView = (ListView)mRootView.findViewById(R.id.listView);
+        listView.setAdapter(adapter);
+
+    }
+
+
 }

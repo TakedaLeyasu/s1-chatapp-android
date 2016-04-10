@@ -4,11 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 
 /**
  * An activity representing a single Channel detail screen. This
@@ -40,6 +40,8 @@ public class ChannelDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+
+
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
         // (e.g. when rotating the screen from portrait to landscape).
@@ -54,7 +56,11 @@ public class ChannelDetailActivity extends AppCompatActivity {
             // using a fragment transaction.
             Bundle arguments = new Bundle();
             arguments.putString(ChannelDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ChannelDetailFragment.ARG_ITEM_ID));
+                    getIntent().getStringExtra(ChannelDetailFragment.ARG_ITEM_ID));         //speichern von Namen und Id des Channels zur danachigen Übergabe an das Fragment
+
+            arguments.putString(ChannelDetailFragment.ARG_ITEM_NAME,
+                    getIntent().getStringExtra(ChannelDetailFragment.ARG_ITEM_NAME));
+
             ChannelDetailFragment fragment = new ChannelDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

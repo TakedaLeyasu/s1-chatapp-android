@@ -3,16 +3,17 @@ package de.kabelskevalley.doegel.stroke;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -83,7 +84,6 @@ public class ChannelListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         new HttpRequestTask(mChannelListener).execute();
     }
 
@@ -106,7 +106,6 @@ public class ChannelListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).getId());
             holder.mContentView.setText(mValues.get(position).getName());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -114,7 +113,8 @@ public class ChannelListActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+                        arguments.putString(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.getId());       //speichern von Namen und Id des Channels zur danachigen Übergabe an das Fragment
+                        arguments.putString(ChannelDetailFragment.ARG_ITEM_NAME, holder.mItem.getName());
                         ChannelDetailFragment fragment = new ChannelDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -124,9 +124,18 @@ public class ChannelListActivity extends AppCompatActivity {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, ChannelDetailActivity.class);
                         intent.putExtra(ChannelDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
+                        intent.putExtra(ChannelDetailFragment.ARG_ITEM_NAME, holder.mItem.getName());
 
                         context.startActivity(intent);
                     }
+                }
+            });
+            holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+
+                    Toast.makeText(getApplicationContext(),"ID:  " + holder.mItem.getId(),Toast.LENGTH_SHORT).show();
+                    return true;
                 }
             });
         }
@@ -138,14 +147,12 @@ public class ChannelListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
             public final TextView mContentView;
             public Channel mItem;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
                 mContentView = (TextView) view.findViewById(R.id.content);
             }
 
