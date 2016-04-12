@@ -1,19 +1,17 @@
 package de.kabelskevalley.doegel.stroke;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.entities.Channel;
 import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
-import de.kabelskevalley.doegel.stroke.network.HttpRequestTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListner;
 
 public class LoginActivity extends AppCompatActivity implements OnHttpResultListner{
@@ -76,7 +74,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
             Log.i("User: ", user.getName() +"  "+user.getToken());
             this.user = user;
         }
-        catch (){
+        catch (Exception e){
             this.user = null;
         }
     }
