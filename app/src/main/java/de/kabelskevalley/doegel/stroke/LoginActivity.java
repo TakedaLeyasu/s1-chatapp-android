@@ -6,11 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.entities.Channel;
-import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListner;
 
@@ -43,6 +43,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
 
     private boolean user_is_known (String name, String password)    //Check ob User vorhanden ist
     {
+        return true; /*     ---> nur Solange bis der Server funktioniert
         LogIn_Data logIn_data = new LogIn_Data(name, password);
 
         new HttpLogInTask(this,logIn_data).execute();
@@ -52,7 +53,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
             return true;
         }
         return false;
-        
+        */
 
     }
 
@@ -70,17 +71,23 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
 
     @Override
     public void onResult(User user) {
+
         try {
-            Log.i("User: ", user.getName() +"  "+user.getToken());
+            Log.i("User: ", user.getName() + "  " + user.getToken());
             this.user = user;
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
+            Log.e("MainActivity", e.getMessage(), e);
             this.user = null;
+            Toast.makeText(getApplicationContext(),"Server Probleme",Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onError(Exception e) {
         Log.e("MainActivity", e.getMessage(), e);
+        this.user = null;
+        Toast.makeText(getApplicationContext(),"Server Probleme",Toast.LENGTH_SHORT).show();
     }
 }
