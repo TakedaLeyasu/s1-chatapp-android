@@ -111,7 +111,6 @@ public class ChannelDetailFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        mRootView.findViewById(R.id.fab).setOnClickListener(null);
         mRootView.findViewById(R.id.message_send).setOnClickListener(null);
 
         mSocket.disconnect();
