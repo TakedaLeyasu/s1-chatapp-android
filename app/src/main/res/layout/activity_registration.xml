@@ -27,44 +27,48 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
-        android:text="Name"
-        android:ems="10"
+        android:text=""
+        android:ems="11"
         android:id="@+id/editText"
         android:layout_below="@+id/textView2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="41dp" />
+        android:layout_marginTop="41dp"
+        android:hint="Name"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textEmailAddress"
-        android:ems="10"
+        android:ems="11"
         android:id="@+id/editText2"
         android:layout_below="@+id/editText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:text="Email" />
+        android:text=""
+        android:hint="E-Mail"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
-        android:ems="10"
+        android:ems="11"
         android:id="@+id/editText3"
         android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:hint="Passwort"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
-        android:ems="10"
+        android:ems="11"
         android:id="@+id/editText4"
         android:layout_below="@+id/editText3"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:hint="Passwort wiederholen"/>
 
     <Button
         android:layout_width="wrap_content"
