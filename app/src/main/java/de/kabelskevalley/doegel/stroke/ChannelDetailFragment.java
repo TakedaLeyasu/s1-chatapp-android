@@ -91,7 +91,7 @@ public class ChannelDetailFragment extends Fragment {
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
 
-        mSocket.on("chat message", onNewMessage);
+        mSocket.on("new message", onNewMessage);
         mSocket.connect();
     }
 
@@ -102,7 +102,7 @@ public class ChannelDetailFragment extends Fragment {
         mRootView.findViewById(R.id.message_send).setOnClickListener(null);
 
         mSocket.disconnect();
-        mSocket.off("chat message", onNewMessage);
+        mSocket.off("new message", onNewMessage);
     }
 
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
@@ -124,8 +124,7 @@ public class ChannelDetailFragment extends Fragment {
         @Override
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
-            mSocket.emit("chat message", message.getText());
-
+            mSocket.emit("new message", message.getText());
 
             message.setText("");
         }
