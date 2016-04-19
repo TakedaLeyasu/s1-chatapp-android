@@ -18,8 +18,9 @@ import android.widget.Toast;
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.entities.Channel;
-import de.kabelskevalley.doegel.stroke.network.HttpRequestTask;
-import de.kabelskevalley.doegel.stroke.network.OnHttpResultListner;
+import de.kabelskevalley.doegel.stroke.entities.User;
+import de.kabelskevalley.doegel.stroke.network.HttpChannelTask;
+import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
 
 /**
  * An activity representing a list of Channels. This activity
@@ -39,7 +40,7 @@ public class ChannelListActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
 
-    private OnHttpResultListner mChannelListener = new OnHttpResultListner() {
+    private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
         public void onResult(List<Channel> channels) {
             mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(channels));
@@ -84,7 +85,7 @@ public class ChannelListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        new HttpRequestTask(mChannelListener).execute();
+        new HttpChannelTask(mChannelListener).execute();
     }
 
     public class ChannelsRecyclerViewAdapter
