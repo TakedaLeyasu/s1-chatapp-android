@@ -28,7 +28,9 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Message;
+import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.SocketHelper;
 
 /**
@@ -46,6 +48,7 @@ public class ChannelDetailFragment extends Fragment {
      */
     private List<Message> message_list = new ArrayList<>();
     private boolean sended = false;
+
     /**
      * The root view of the current fragment, we keep a reference to find
      * subviews.
@@ -58,7 +61,7 @@ public class ChannelDetailFragment extends Fragment {
      */
     private Socket mSocket;
 
-    public View.OnClickListener onSendClicked = new View.OnClickListener() {    //public damit Fab darauf zugreifen kann
+    private View.OnClickListener onSendClicked = new View.OnClickListener() {    //public damit Fab darauf zugreifen kann
         @Override
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
@@ -68,6 +71,7 @@ public class ChannelDetailFragment extends Fragment {
             message.setText("");
         }
     };
+
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -129,7 +133,17 @@ public class ChannelDetailFragment extends Fragment {
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
 
         mSocket.on("new message", onNewMessage);
+        //mSocket.on("user joined", onNewMessage);
+        //mSocket.on("user left", onNewMessage);
+        //mSocket.on("typing", onNewMessage);
+        //mSocket.on("stop typing", onNewMessage);
         mSocket.connect();
+
+        User user = (User) StorageHelper.getInstance().getObject("user", User.class);
+        mSocket.emit("add user", user.getName());
+
+        //mSocket.emit("typing");
+        //mSocket.emit("stop typing");
     }
 
     @Override
@@ -140,6 +154,10 @@ public class ChannelDetailFragment extends Fragment {
 
         mSocket.disconnect();
         mSocket.off("new message", onNewMessage);
+        //mSocket.off("user joined", onNewMessage);
+        //mSocket.off("user left", onNewMessage);
+        //mSocket.off("typing", onNewMessage);
+        //mSocket.off("stop typing", onNewMessage);
     }
 
     public void show_messages() {
@@ -155,8 +173,6 @@ public class ChannelDetailFragment extends Fragment {
 
             }
         });
-
-
     }
 
     public class MessageAdapterItem extends ArrayAdapter<Message> {
@@ -174,6 +190,8 @@ public class ChannelDetailFragment extends Fragment {
             this.mContext = mContext;
             this.data = data;
         }
+
+
 
 
         @Override

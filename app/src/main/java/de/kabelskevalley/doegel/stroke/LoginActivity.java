@@ -12,6 +12,7 @@ import com.github.nkzawa.socketio.client.Socket;
 
 import java.util.List;
 
+import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
 import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
@@ -25,6 +26,8 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+        StorageHelper.Init(this, "stroke");
     }
 
     public void logIn(View view)
@@ -45,8 +48,8 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
 
     @Override
     public void onResult(User user) {
-        Socket mSocket = SocketHelper.getSocket();
-        mSocket.emit("add user", user.getName());
+        StorageHelper.getInstance()
+                .storeObject("user", user);
 
         runOnUiThread(new Runnable() {
             @Override
