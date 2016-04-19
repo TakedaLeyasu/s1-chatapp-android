@@ -26,7 +26,7 @@ public class HttpRequestTask extends AsyncTask<Void, Void, List<Channel>> {
     @Override
     protected List<Channel> doInBackground(Void... params) {
         try {
-            final String url = "http://chat.kabelskevalley.com:3000/channels";
+            final String url = "http://chat.kabelskevalley.com:3000/api/channels";
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             Channel[] channels = restTemplate.getForObject(url, Channel[].class);
