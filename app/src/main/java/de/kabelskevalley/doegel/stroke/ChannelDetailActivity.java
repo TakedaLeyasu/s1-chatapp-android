@@ -16,23 +16,21 @@ import android.view.MenuItem;
  */
 public class ChannelDetailActivity extends AppCompatActivity {
 
+    ChannelDetailFragment fragment;
+    FloatingActionButton fab;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_channel_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
-
-
+        fab = (FloatingActionButton)findViewById(R.id.fab);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
-
-
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
         // (e.g. when rotating the screen from portrait to landscape).
@@ -52,15 +50,11 @@ public class ChannelDetailActivity extends AppCompatActivity {
             arguments.putString(ChannelDetailFragment.ARG_ITEM_NAME,
                     getIntent().getStringExtra(ChannelDetailFragment.ARG_ITEM_NAME));
 
-            final ChannelDetailFragment fragment = new ChannelDetailFragment();
+            fragment = new ChannelDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.channel_detail_container, fragment)
                     .commit();
-
-            final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.setOnClickListener(fragment.onSendClicked);     //Fab kann nun auch Nachrichten versenden
-
         }
     }
 
@@ -78,5 +72,18 @@ public class ChannelDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        fab.setOnClickListener(fragment.onSendClicked );
+    }
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        fab.setOnClickListener(null );
     }
 }
