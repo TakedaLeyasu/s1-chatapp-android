@@ -14,13 +14,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
-        android:text="Name"
+        android:text=""
         android:ems="10"
         android:id="@+id/editText_N"
         android:layout_marginTop="27dp"
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:textColor="#000000" />
+        android:textColor="#000000"
+        android:hint="Name"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -32,7 +33,8 @@
         android:layout_below="@+id/editText_N"
         android:layout_alignLeft="@+id/editText_N"
         android:layout_alignStart="@+id/editText_N"
-        android:textColor="#000000" />
+        android:textColor="#000000"
+        android:hint="Passwort"/>
 
     <TextView
         android:layout_width="wrap_content"
