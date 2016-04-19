@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.entities.Message;
+import de.kabelskevalley.doegel.stroke.network.SocketHelper;
 
 /**
  * A fragment representing a single Channel detail screen.
@@ -36,16 +38,14 @@ import de.kabelskevalley.doegel.stroke.entities.Message;
  * on handsets.
  */
 public class ChannelDetailFragment extends Fragment {
+    public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_ITEM_NAME = "item_name";
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
     private List<Message> message_list = new ArrayList<>();
     private boolean sended = false;
-
-    public static final String ARG_ITEM_ID = "item_id";
-    public static final String ARG_ITEM_NAME = "item_name";
-
     /**
      * The root view of the current fragment, we keep a reference to find
      * subviews.
@@ -57,36 +57,60 @@ public class ChannelDetailFragment extends Fragment {
      * events our server broadcasts.
      */
     private Socket mSocket;
-    {
-        try {
-            mSocket = IO.socket("http://chat.kabelskevalley.com:3000/");
-        } catch (URISyntaxException e) {}
-    }
+
+    public View.OnClickListener onSendClicked = new View.OnClickListener() {    //public damit Fab darauf zugreifen kann
+        @Override
+        public void onClick(View v) {
+            EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
+            mSocket.emit("new message", message.getText());
+
+            sended = true;
+            message.setText("");
+        }
+    };
+    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    String message = args[0].toString();
+                    Calendar cal = new GregorianCalendar();
+                    int hour = cal.get(Calendar.HOUR_OF_DAY);
+                    int min = cal.get(Calendar.MINUTE);
+                    String time_temp = String.valueOf(hour) + " : " + String.valueOf(min);
+
+                    Message message_temp;
+
+                    if (sended) {
+                        message_temp = new Message(message, null, time_temp);
+                        sended = false;
+                    } else
+                        message_temp = new Message(message, "anonym", time_temp);
+
+                    message_list.add(message_temp);
+                    show_messages();
+                }
+            });
+        }
+    };
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public ChannelDetailFragment() {
+        mSocket = SocketHelper.getSocket();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-
-
-                if (appBarLayout != null) {
-                    if(getArguments().containsKey(ARG_ITEM_NAME))
-                        appBarLayout.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));   //AppBar zeigt Channel Namen an
-                    else
-                        appBarLayout.setTitle(getArguments().getCharSequence("Stroke! chat "));
-                }
-            }
+        if (getArguments().containsKey(ARG_ITEM_NAME)) {
+            Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.detail_toolbar);
+            toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
         }
     }
 
@@ -118,54 +142,11 @@ public class ChannelDetailFragment extends Fragment {
         mSocket.off("new message", onNewMessage);
     }
 
-    private Emitter.Listener onNewMessage = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
+    public void show_messages() {
 
-                    String message = args[0].toString();
-                    Calendar cal = new GregorianCalendar();
-                    int hour = cal.get(Calendar.HOUR_OF_DAY);
-                    int min = cal.get(Calendar.MINUTE);
-                    String time_temp = String.valueOf(hour) + " : " + String.valueOf(min);
+        MessageAdapterItem myAdapter = new MessageAdapterItem(getActivity(), R.layout.message_view_item, message_list);
 
-                    Message message_temp;
-
-                    if(sended) {
-                        message_temp = new Message(message, null, time_temp);
-                        sended = false;
-                    }
-                    else
-                        message_temp = new Message(message,"anonym",time_temp);
-
-                    message_list.add(message_temp);
-                    show_messages();
-                }
-            });
-        }
-    };
-
-    public View.OnClickListener onSendClicked = new View.OnClickListener() {    //public damit Fab darauf zugreifen kann
-        @Override
-        public void onClick(View v) {
-            EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
-            mSocket.emit("new message", message.getText());
-
-            sended = true;
-            message.setText("");
-        }
-    };
-
-
-
-    public void show_messages()
-    {
-
-        MessageAdapterItem myAdapter = new MessageAdapterItem(getActivity(),R.layout.message_view_item,message_list);
-
-        ListView listView = (ListView)mRootView.findViewById(R.id.listView);
+        ListView listView = (ListView) mRootView.findViewById(R.id.listView);
         listView.setAdapter(myAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -204,10 +185,10 @@ public class ChannelDetailFragment extends Fragment {
          * It will have a non-null value when ListView is asking you recycle the row layout.
          * So, when convertView is not null, you should simply update its contents instead of inflating a new row layout.
          */
-            if(convertView==null){
+            if (convertView == null) {
                 // inflate the layout
                 LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
-                convertView = inflater.inflate(layoutResourceId,parent,false);
+                convertView = inflater.inflate(layoutResourceId, parent, false);
             }
 
 
@@ -215,15 +196,13 @@ public class ChannelDetailFragment extends Fragment {
 
             TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
             TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
-            TextView sender_view = (TextView)convertView.findViewById(R.id.message_sender_item);
-            LinearLayout layout = (LinearLayout)convertView.findViewById(R.id.message_layout);
+            TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
+            LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.message_layout);
 
 
-            if(data.get(position).getSender() == null)
-            {
+            if (data.get(position).getSender() == null) {
                 layout.setBackgroundColor(Color.YELLOW);
-            } else
-            {
+            } else {
                 sender_view.setText(data.get(position).getSender());
                 layout.setGravity(Gravity.END);
                 text_view.setGravity(Gravity.END);
@@ -231,7 +210,7 @@ public class ChannelDetailFragment extends Fragment {
                 time_view.setGravity(Gravity.START);
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                params.gravity= Gravity.END;
+                params.gravity = Gravity.END;
                 layout.setLayoutParams(params);
 
             }
@@ -244,8 +223,6 @@ public class ChannelDetailFragment extends Fragment {
         }
 
     }
-
-
 
 
 }
