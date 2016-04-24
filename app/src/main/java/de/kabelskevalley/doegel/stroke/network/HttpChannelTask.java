@@ -1,8 +1,6 @@
 package de.kabelskevalley.doegel.stroke.network;
 
 import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.TextView;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -10,14 +8,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.List;
 
-import de.kabelskevalley.doegel.stroke.R;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
 
-public class HttpRequestTask extends AsyncTask<Void, Void, List<Channel>> {
+public class HttpChannelTask extends AsyncTask<Void, Void, List<Channel>> {
 
-    private OnHttpResultListner mListener;
+    private OnHttpResultListener<List<Channel>> mListener;
 
-    public HttpRequestTask(OnHttpResultListner listener){
+    public HttpChannelTask(OnHttpResultListener<List<Channel>> listener){
         super();
 
         mListener = listener;
