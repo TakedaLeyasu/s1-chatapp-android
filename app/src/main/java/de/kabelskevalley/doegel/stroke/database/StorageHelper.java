@@ -53,7 +53,6 @@ public class StorageHelper {
             // nothing to do here
         }
 
-
         return false;
     }
 
