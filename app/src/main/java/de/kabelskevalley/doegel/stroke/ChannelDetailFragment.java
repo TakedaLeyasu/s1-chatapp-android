@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
 
@@ -46,7 +47,6 @@ public class ChannelDetailFragment extends Fragment {
      * represents.
      */
     private List<Message> message_list = new ArrayList<>();
-    private boolean sended = false;
     private boolean typing = false;
 
     /**
@@ -67,7 +67,7 @@ public class ChannelDetailFragment extends Fragment {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
             mSocket.emit("new message", message.getText());
 
-            sended = true;
+            typing = false; // We do not want to emit "stop typing" on sending.
             message.setText("");
         }
     };
@@ -75,29 +75,22 @@ public class ChannelDetailFragment extends Fragment {
     private TextWatcher textWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
         }
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-
         }
 
         @Override
         public void afterTextChanged(Editable s) {
             EditText message_text = ((EditText) mRootView.findViewById(R.id.message_text));
-            if(typing)
-            {
-                if(message_text.getText().toString().equals(""))
-                {
+            if (typing) {
+                if (message_text.getText().toString().equals("")) {
                     mSocket.emit("stop typing");
                     typing = false;
                 }
-            }
-            else
-            {
-                if(!message_text.getText().toString().equals(""))
-                {
+            } else {
+                if (!message_text.getText().toString().equals("")) {
                     mSocket.emit("typing");
                     typing = true;
                 }
@@ -108,25 +101,12 @@ public class ChannelDetailFragment extends Fragment {
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
+
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
-                    String message = args[0].toString();
-                    Calendar cal = new GregorianCalendar();
-                    int hour = cal.get(Calendar.HOUR_OF_DAY);
-                    int min = cal.get(Calendar.MINUTE);
-                    String time_temp = String.valueOf(hour) + " : " + String.valueOf(min);
-
-                    Message message_temp;
-
-                    if (sended) {
-                        message_temp = new Message(message, null, time_temp);
-                        sended = false;
-                    } else
-                        message_temp = new Message(message, "anonym", time_temp);
-
-                    message_list.add(message_temp);
+                    Message message = ChannelDetailFragment.this.parseMessage(args[0].toString());
+                    message_list.add(message);
                     show_messages();
                 }
             });
@@ -139,8 +119,8 @@ public class ChannelDetailFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    String name = args[0].toString();
-                    Message message_temp = new Message(name + " is typing...",null,null);
+                    Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
+                    Message message_temp = new Message(Message.Type.Info, info.getSender(), " is typing...");
                     message_list.add(message_temp);
                     show_messages();
                 }
@@ -154,9 +134,10 @@ public class ChannelDetailFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    String name = args[0].toString();
-                    Message message_temp = new Message(name +" stoped typing...",null,null);
+                    Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
+                    Message message_temp = new Message(Message.Type.Info, info.getSender(), "stopped typing...");
                     message_list.add(message_temp);
+
                     show_messages();
                 }
             });
@@ -166,19 +147,20 @@ public class ChannelDetailFragment extends Fragment {
     private Emitter.Listener onUserJoined = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            try{
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
+            try {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
 
-                public void run() {
-                    String name= args[0].toString();
-                    Message message_temp = new Message(name + " joined :)", null, null);
-                    message_list.add(message_temp);
-                    show_messages();
-                }
-            });
+                    public void run() {
+                        Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
+                        Message message_temp = new Message(Message.Type.Info, info.getSender(), "joined :)");
+                        message_list.add(message_temp);
+                        show_messages();
+                    }
+                });
+            } catch (Exception e) {
             }
-            catch (Exception e){};
+            ;
         }
     };
 
@@ -189,17 +171,30 @@ public class ChannelDetailFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        String name = args[0].toString();
-                        Message message_temp = new Message(name +" left :(",null,null);
+                        Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
+                        Message message_temp = new Message(Message.Type.Info, info.getSender(), "left :(");
                         message_list.add(message_temp);
                         show_messages();
                     }
                 });
+            } catch (Exception e) {
             }
-            catch(Exception e){}
-
         }
     };
+
+    /**
+     * Parses the message into the message object
+     *
+     * @param value
+     * @return
+     */
+    private Message parseMessage(String value) {
+        try {
+            return (new ObjectMapper()).readValue(value, Message.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -237,7 +232,7 @@ public class ChannelDetailFragment extends Fragment {
 
         mSocket.on("new message", onNewMessage);
         mSocket.on("typing", onTyping);
-        mSocket.on("stop typing",onStopTyping);
+        mSocket.on("stop typing", onStopTyping);
 
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
@@ -246,8 +241,6 @@ public class ChannelDetailFragment extends Fragment {
 
         User user = (User) StorageHelper.getInstance().getObject("user", User.class);
         mSocket.emit("add user", user.getName());
-
-
     }
 
     @Override
@@ -264,16 +257,13 @@ public class ChannelDetailFragment extends Fragment {
 
         mSocket.off("user joined", onNewMessage);
         mSocket.off("user left", onNewMessage);
-
     }
 
     @Override
-    public void onStop()
-    {
+    public void onStop() {
         mSocket.emit("user left");
         mSocket.disconnect();
         super.onStop();
-
     }
 
     public void show_messages() {
@@ -282,13 +272,6 @@ public class ChannelDetailFragment extends Fragment {
 
         ListView listView = (ListView) mRootView.findViewById(R.id.listView);
         listView.setAdapter(myAdapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-        });
     }
 
     public class MessageAdapterItem extends ArrayAdapter<Message> {
@@ -306,9 +289,6 @@ public class ChannelDetailFragment extends Fragment {
             this.mContext = mContext;
             this.data = data;
         }
-
-
-
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -333,30 +313,48 @@ public class ChannelDetailFragment extends Fragment {
             TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
             LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.message_layout);
 
+            switch (data.get(position).getType())
+            {
+                case Unknown:
+                    break;
 
-            if (data.get(position).getSender() == null) {
-                layout.setBackgroundColor(Color.YELLOW);
-            } else {
-                sender_view.setText(data.get(position).getSender());
-                layout.setGravity(Gravity.END);
-                text_view.setGravity(Gravity.END);
-                sender_view.setGravity(Gravity.END);
-                time_view.setGravity(Gravity.START);
+                case Chat:
+                    if (data.get(position).isMyMessage()) {
+                        layout.setBackgroundColor(Color.YELLOW);
+                    } else {
+                        sender_view.setText(data.get(position).getSender());
 
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                params.gravity = Gravity.END;
-                layout.setLayoutParams(params);
+                        layout.setBackgroundColor(Color.MAGENTA);
+                        layout.setGravity(Gravity.END);
+                        text_view.setGravity(Gravity.END);
+                        sender_view.setGravity(Gravity.END);
+                        time_view.setGravity(Gravity.START);
 
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        params.gravity = Gravity.END;
+                        layout.setLayoutParams(params);
+                    }
+                    break;
+
+                case Info:
+                    sender_view.setText(data.get(position).getSender());
+
+                    layout.setBackgroundColor(Color.CYAN);
+                    layout.setGravity(Gravity.CENTER);
+                    text_view.setGravity(Gravity.CENTER);
+                    sender_view.setGravity(Gravity.CENTER);
+                    time_view.setGravity(Gravity.CENTER);
+
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    params.gravity = Gravity.CENTER;
+                    layout.setLayoutParams(params);
+                    break;
             }
 
             text_view.setText(data.get(position).getMessage());
             time_view.setText(data.get(position).getTime());
 
             return convertView;
-
         }
-
     }
-
-
 }
