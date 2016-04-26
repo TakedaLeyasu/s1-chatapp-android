@@ -8,55 +8,36 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.github.nkzawa.socketio.client.Socket;
+
 import java.util.List;
 
+import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
+import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
-import de.kabelskevalley.doegel.stroke.network.OnHttpResultListner;
+import de.kabelskevalley.doegel.stroke.network.HttpLogInTask;
+import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
+import de.kabelskevalley.doegel.stroke.network.SocketHelper;
 
-public class LoginActivity extends AppCompatActivity implements OnHttpResultListner{
+public class LoginActivity extends AppCompatActivity implements OnHttpResultListener<User> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+
+        StorageHelper.Init(this, "stroke");
     }
-    private User user;
 
     public void logIn(View view)
     {
         EditText name = (EditText)findViewById(R.id.editText_N);
         EditText password = (EditText)findViewById(R.id.editText_P);
 
-        if(user_is_known(name.getText().toString(),password.getText().toString())==true)    //Wenn User bekannt ist
-        {
-            Intent intent = new Intent(this, ChannelListActivity.class);                            //Lade neue Activity
-            startActivity(intent);
-        }
-        else
-        {
-            //add stuff here
-        }
-
-
-    }
-
-    private boolean user_is_known (String name, String password)    //Check ob User vorhanden ist
-    {
-        return true; /*     ---> nur Solange bis der Server funktioniert
-        LogIn_Data logIn_data = new LogIn_Data(name, password);
-
+        LogIn_Data logIn_data = new LogIn_Data(name.getText().toString(), password.getText().toString());
         new HttpLogInTask(this,logIn_data).execute();
-
-        if(user != null)
-        {
-            return true;
-        }
-        return false;
-        */
-
     }
-
 
     public void register(View view)
     {
@@ -64,30 +45,29 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
         startActivity(intent);
         //add stuff here
     }
-    @Override
-    public void onResult(List<Channel> channels) {
-
-    }
 
     @Override
     public void onResult(User user) {
+        StorageHelper.getInstance()
+                .storeObject("user", user);
 
-        try {
-            Log.i("User: ", user.getName() + "  " + user.getToken());
-            this.user = user;
-        }
-        catch (Exception e)
-        {
-            Log.e("MainActivity", e.getMessage(), e);
-            this.user = null;
-            Toast.makeText(getApplicationContext(),"Server Probleme",Toast.LENGTH_SHORT).show();
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //Lade neue Activity
+                Intent intent = new Intent(getApplicationContext(), ChannelListActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
     public void onError(Exception e) {
-        Log.e("MainActivity", e.getMessage(), e);
-        this.user = null;
-        Toast.makeText(getApplicationContext(),"Server Probleme",Toast.LENGTH_SHORT).show();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), "Server Probleme", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

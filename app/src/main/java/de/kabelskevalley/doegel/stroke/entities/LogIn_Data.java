@@ -7,10 +7,10 @@ public class LogIn_Data {
     final String username;
     final String password;
 
-    public LogIn_Data(String name, String passwort)
+    public LogIn_Data(String username, String passwort)
     {
+        this.username = username;
         this.password = passwort;
-        this.username = name;
     }
 
     public String getUsername(){return username;}
