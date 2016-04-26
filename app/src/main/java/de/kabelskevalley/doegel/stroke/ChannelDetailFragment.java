@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,10 +20,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -48,6 +47,7 @@ public class ChannelDetailFragment extends Fragment {
      */
     private List<Message> message_list = new ArrayList<>();
     private boolean sended = false;
+    private boolean typing = false;
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -61,7 +61,7 @@ public class ChannelDetailFragment extends Fragment {
      */
     private Socket mSocket;
 
-    private View.OnClickListener onSendClicked = new View.OnClickListener() {    //public damit Fab darauf zugreifen kann
+    private View.OnClickListener onSendClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
@@ -69,6 +69,39 @@ public class ChannelDetailFragment extends Fragment {
 
             sended = true;
             message.setText("");
+        }
+    };
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            EditText message_text = ((EditText) mRootView.findViewById(R.id.message_text));
+            if(typing)
+            {
+                if(message_text.getText().toString().equals(""))
+                {
+                    mSocket.emit("stop typing");
+                    typing = false;
+                }
+            }
+            else
+            {
+                if(!message_text.getText().toString().equals(""))
+                {
+                    mSocket.emit("typing");
+                    typing = true;
+                }
+            }
         }
     };
 
@@ -97,6 +130,74 @@ public class ChannelDetailFragment extends Fragment {
                     show_messages();
                 }
             });
+        }
+    };
+
+    private Emitter.Listener onTyping = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String name = args[0].toString();
+                    Message message_temp = new Message(name + " is typing...",null,null);
+                    message_list.add(message_temp);
+                    show_messages();
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onStopTyping = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String name = args[0].toString();
+                    Message message_temp = new Message(name +" stoped typing...",null,null);
+                    message_list.add(message_temp);
+                    show_messages();
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onUserJoined = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            try{
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+
+                public void run() {
+                    String name= args[0].toString();
+                    Message message_temp = new Message(name + " joined :)", null, null);
+                    message_list.add(message_temp);
+                    show_messages();
+                }
+            });
+            }
+            catch (Exception e){};
+        }
+    };
+
+    private Emitter.Listener onUserLeft = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            try {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String name = args[0].toString();
+                        Message message_temp = new Message(name +" left :(",null,null);
+                        message_list.add(message_temp);
+                        show_messages();
+                    }
+                });
+            }
+            catch(Exception e){}
+
         }
     };
 
@@ -131,19 +232,22 @@ public class ChannelDetailFragment extends Fragment {
         super.onResume();
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
+        EditText message_text = (EditText) mRootView.findViewById(R.id.message_text);
+        message_text.addTextChangedListener(textWatcher);
 
         mSocket.on("new message", onNewMessage);
-        //mSocket.on("user joined", onNewMessage);
-        //mSocket.on("user left", onNewMessage);
-        //mSocket.on("typing", onNewMessage);
-        //mSocket.on("stop typing", onNewMessage);
+        mSocket.on("typing", onTyping);
+        mSocket.on("stop typing",onStopTyping);
+
+        mSocket.on("user joined", onUserJoined);
+        mSocket.on("user left", onUserLeft);
+
         mSocket.connect();
 
         User user = (User) StorageHelper.getInstance().getObject("user", User.class);
         mSocket.emit("add user", user.getName());
 
-        //mSocket.emit("typing");
-        //mSocket.emit("stop typing");
+
     }
 
     @Override
@@ -151,13 +255,25 @@ public class ChannelDetailFragment extends Fragment {
         super.onPause();
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(null);
+        mSocket.emit("user left");
 
         mSocket.disconnect();
         mSocket.off("new message", onNewMessage);
-        //mSocket.off("user joined", onNewMessage);
-        //mSocket.off("user left", onNewMessage);
-        //mSocket.off("typing", onNewMessage);
-        //mSocket.off("stop typing", onNewMessage);
+        mSocket.off("typing", onTyping);
+        mSocket.off("stop typing", onStopTyping);
+
+        mSocket.off("user joined", onNewMessage);
+        mSocket.off("user left", onNewMessage);
+
+    }
+
+    @Override
+    public void onStop()
+    {
+        mSocket.emit("user left");
+        mSocket.disconnect();
+        super.onStop();
+
     }
 
     public void show_messages() {
