@@ -12,7 +12,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/message_layout"
-        android:background="#55bded"
         android:layout_gravity="start">
 
     <TextView
