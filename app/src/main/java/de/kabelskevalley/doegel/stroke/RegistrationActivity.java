@@ -73,11 +73,10 @@ public class RegistrationActivity extends AppCompatActivity implements OnHttpRes
     public boolean check_registrationData(String password1, String password2, String name) {
 
 
-        if (password1.equals(password2)&&name!=null&&password1.length()>3) {
-
+        if (password1.equals(password2) && name!=null && password1.length()>3 && !password1.contains(" ") && !name.contains(" ")) {
             return true;
         }
-        Toast.makeText(getApplicationContext(),"Passwörter stimmen nicht überein, sind zu kurz oder der Name ist nicht vorhanden. \n\n Such dir was aus;)",Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(),"Passwörter stimmen nicht überein, sind zu kurz, haben Leerzeichen enthalten oder der Name ist nicht vorhanden oooooder enthält auch Leerzeichen. \n\n Such dir was aus;)",Toast.LENGTH_LONG).show();
         return  false;
 
     }
