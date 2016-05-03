@@ -52,8 +52,11 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
 
     @Override
     public void onResult(User user) {
-        StorageHelper.getInstance()
-                .storeObject("user", user);
+        if (user.getToken() != null) {
+            // only save the user object upon fresh login
+            StorageHelper.getInstance()
+                    .storeObject("user", user);
+        }
 
         runOnUiThread(new Runnable() {
             @Override
