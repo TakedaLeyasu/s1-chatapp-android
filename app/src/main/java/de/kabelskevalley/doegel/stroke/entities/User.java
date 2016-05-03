@@ -1,8 +1,8 @@
 package de.kabelskevalley.doegel.stroke.entities;
 
-/**
- * Created by livestream on 12.04.2016.
- */
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(value={"_id", "__v"})
 public class User {
     private String token;
     private String name;

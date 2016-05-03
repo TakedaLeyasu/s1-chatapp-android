@@ -31,7 +31,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
        if(user!=null)
         {
             Log.i("  Token ", user.getToken());
-                new HttpLogInTask(this, user.getToken()).execute();
+            new HttpLogInTask(this, new LogIn_Data(user.getToken())).execute();
         }
         else {
            Log.i("  Token ", "null");
@@ -58,8 +58,11 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
 
     @Override
     public void onResult(User user) {
-        StorageHelper.getInstance()
-                .storeObject("user", user);
+        if (user.getToken() != null) {
+            // only save the user object upon fresh login
+            StorageHelper.getInstance()
+                    .storeObject("user", user);
+        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -77,7 +80,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
             @Override
             public void run() {
                 setContentView(R.layout.activity_log_in);
-                Toast.makeText(getApplicationContext(), "Passwort und Name stimmen nicht überein", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Benutzerdaten sind nicht korrekt!", Toast.LENGTH_SHORT).show();
             }
         });
     }
