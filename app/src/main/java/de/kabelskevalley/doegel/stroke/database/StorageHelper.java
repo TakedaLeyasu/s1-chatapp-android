@@ -2,11 +2,8 @@ package de.kabelskevalley.doegel.stroke.database;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
 
 /**
  * Created by felixrudat on 19.04.16.
@@ -66,6 +63,13 @@ public class StorageHelper {
             return null;
         }
     }
+    public void clear(String key)
+    {
+        getSharedPreferences().edit()
+                .putString(key, null)
+                .apply();
+    }
+
 
     private SharedPreferences getSharedPreferences()
     {
