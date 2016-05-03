@@ -6,13 +6,16 @@ package de.kabelskevalley.doegel.stroke.entities;
 public class LogIn_Data {
     final String username;
     final String password;
+    final String name;
 
-    public LogIn_Data(String username, String passwort)
+    public LogIn_Data(String username, String password)
     {
         this.username = username;
-        this.password = passwort;
+        this.password = password;
+        this.name = username;
     }
 
     public String getUsername(){return username;}
+    public String getName(){return name;}
     public String getPassword(){return password;}
 }

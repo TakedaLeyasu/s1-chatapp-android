@@ -10,6 +10,9 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -17,8 +20,8 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
-import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.HttpChannelTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
 
@@ -30,7 +33,7 @@ import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class ChannelListActivity extends AppCompatActivity {
+public class ChannelListActivity extends AppCompatActivity{
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -51,6 +54,8 @@ public class ChannelListActivity extends AppCompatActivity {
             Log.e("MainActivity", e.getMessage(), e);
         }
     };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +86,31 @@ public class ChannelListActivity extends AppCompatActivity {
             mTwoPane = true;
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.logOut)
+        {
+            StorageHelper.getInstance().clear("user");
+            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+
+
 
     @Override
     protected void onResume() {

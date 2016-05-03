@@ -12,7 +12,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -24,8 +23,7 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
@@ -47,6 +45,7 @@ public class ChannelDetailFragment extends Fragment {
      * represents.
      */
     private List<Message> message_list = new ArrayList<>();
+    private HashMap<String,Integer> typing_map = new HashMap<>();
     private boolean typing = false;
 
     /**
@@ -66,8 +65,6 @@ public class ChannelDetailFragment extends Fragment {
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
             mSocket.emit("new message", message.getText());
-
-            typing = false; // We do not want to emit "stop typing" on sending.
             message.setText("");
         }
     };
@@ -121,8 +118,13 @@ public class ChannelDetailFragment extends Fragment {
                 public void run() {
                     Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                     Message message_temp = new Message(Message.Type.Info, info.getSender(), " is typing...");
+
+                    typing_map.put(info.getSender(),message_list.size()); //Postition der Information wird gespeichert
                     message_list.add(message_temp);
+
                     show_messages();
+
+
                 }
             });
         }
@@ -135,10 +137,15 @@ public class ChannelDetailFragment extends Fragment {
                 @Override
                 public void run() {
                     Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
-                    Message message_temp = new Message(Message.Type.Info, info.getSender(), "stopped typing...");
-                    message_list.add(message_temp);
 
-                    show_messages();
+                    try{
+                        //Postition der "is typing..." Message wird abgerufen und die Message, wenn vorhanden, gelöscht.
+                        int position = typing_map.get(info.getSender());
+                        message_list.remove(position);
+                        show_messages();
+                    }catch (Exception e){}
+
+
                 }
             });
         }
@@ -293,20 +300,11 @@ public class ChannelDetailFragment extends Fragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-        /*
-         * The convertView argument is essentially a "ScrapView" as described is Lucas post
-         * http://lucasr.org/2012/04/05/performance-tips-for-androids-listview/
-         * It will have a non-null value when ListView is asking you recycle the row layout.
-         * So, when convertView is not null, you should simply update its contents instead of inflating a new row layout.
-         */
-            if (convertView == null) {
-                // inflate the layout
-                LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
-                convertView = inflater.inflate(layoutResourceId, parent, false);
-            }
 
+            // inflate the layout
+            LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+            convertView = inflater.inflate(layoutResourceId, parent, false);
 
-            // get the TextView and then set the text (item name) and tag (item ID) values
 
             TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
             TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
