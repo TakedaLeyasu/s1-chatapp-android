@@ -1,6 +1,7 @@
 package de.kabelskevalley.doegel.stroke.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Calendar;
@@ -8,9 +9,7 @@ import java.util.GregorianCalendar;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 
-/**
- * Created by Hartmut on 13.04.2016.
- */
+@JsonIgnoreProperties(value={"_id", "__v"})
 public class Message {
 
     public enum Type {
