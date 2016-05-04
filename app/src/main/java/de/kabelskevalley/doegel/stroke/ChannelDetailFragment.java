@@ -2,25 +2,24 @@ package de.kabelskevalley.doegel.stroke;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +46,7 @@ public class ChannelDetailFragment extends Fragment {
     private List<Message> message_list = new ArrayList<>();
     private HashMap<String,Integer> typing_map = new HashMap<>();
     private boolean typing = false;
+    public ImageLoader imageLoader;
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -219,6 +219,8 @@ public class ChannelDetailFragment extends Fragment {
             Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.detail_toolbar);
             toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
         }
+
+        imageLoader = ImageLoader.getInstance(); // Get singleton instance
     }
 
     @Override
@@ -302,7 +304,7 @@ public class ChannelDetailFragment extends Fragment {
 
 
             // inflate the layout
-            LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+  /*          LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
             convertView = inflater.inflate(layoutResourceId, parent, false);
 
 
@@ -310,6 +312,7 @@ public class ChannelDetailFragment extends Fragment {
             TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
             TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
             LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.message_layout);
+            */
 
             switch (data.get(position).getType())
             {
@@ -317,40 +320,47 @@ public class ChannelDetailFragment extends Fragment {
                     break;
 
                 case Chat:
+
+
+
                     if (data.get(position).isMyMessage()) {
-                        layout.setBackgroundColor(Color.YELLOW);
+
+                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                        convertView = inflater.inflate(R.layout.my_message_view, parent, false);
+                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
+                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+
+                        text_view.setText(data.get(position).getMessage());
+                        time_view.setText(data.get(position).getTime());
+
+                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
+                        imageLoader.displayImage("http://i.ytimg.com/i/WaRzDMN6jYNasxzb88qiBg/mq1.jpg?v=4ff585b2", imageView);
+
                     } else {
-                        sender_view.setText(data.get(position).getSender());
+                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                        convertView = inflater.inflate(R.layout.other_message_view, parent, false);
+                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
+                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+                        TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
 
-                        layout.setBackgroundColor(Color.MAGENTA);
-                        layout.setGravity(Gravity.END);
-                        text_view.setGravity(Gravity.END);
-                        sender_view.setGravity(Gravity.END);
-                        time_view.setGravity(Gravity.START);
+                        text_view.setText(data.get(position).getMessage());
+                        time_view.setText(data.get(position).getTime());
+                        sender_view.setText(data.get(position).getTime());
 
-                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        params.gravity = Gravity.END;
-                        layout.setLayoutParams(params);
+                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
+                        imageLoader.displayImage("http://i.ytimg.com/i/WaRzDMN6jYNasxzb88qiBg/mq1.jpg?v=4ff585b2", imageView);
                     }
                     break;
 
                 case Info:
-                    sender_view.setText(data.get(position).getSender());
+                    LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                    convertView = inflater.inflate(R.layout.state_view, parent, false);
+                    TextView text_view = (TextView) convertView.findViewById(R.id.state_view);
 
-                    layout.setBackgroundColor(Color.CYAN);
-                    layout.setGravity(Gravity.CENTER);
-                    text_view.setGravity(Gravity.CENTER);
-                    sender_view.setGravity(Gravity.CENTER);
-                    time_view.setGravity(Gravity.CENTER);
-
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    params.gravity = Gravity.CENTER;
-                    layout.setLayoutParams(params);
+                    text_view.setText(data.get(position).getMessage());
                     break;
             }
 
-            text_view.setText(data.get(position).getMessage());
-            time_view.setText(data.get(position).getTime());
 
             return convertView;
         }

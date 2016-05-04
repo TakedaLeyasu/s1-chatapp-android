@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
@@ -21,6 +24,9 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
         super.onCreate(savedInstanceState);
         StorageHelper.Init(this, "stroke");
         User user =(User) StorageHelper.getInstance().getObject("user",User.class);
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoader.getInstance().init(config);
 
        if(user!=null)
         {
