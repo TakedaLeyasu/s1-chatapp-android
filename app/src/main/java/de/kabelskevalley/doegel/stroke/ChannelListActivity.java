@@ -15,8 +15,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.List;
 
@@ -42,6 +45,7 @@ public class ChannelListActivity extends AppCompatActivity{
     private boolean mTwoPane;
 
     private RecyclerView mRecyclerView;
+    private ImageLoader imageLoader;
 
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
@@ -85,6 +89,8 @@ public class ChannelListActivity extends AppCompatActivity{
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        imageLoader = ImageLoader.getInstance(); // Get singleton instance
     }
 
     @Override
@@ -101,6 +107,13 @@ public class ChannelListActivity extends AppCompatActivity{
         {
             StorageHelper.getInstance().clear("user");
             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if(item.getItemId() == R.id.profile)
+        {
+            Intent intent = new Intent(getApplicationContext(),ProfileActivity.class);
             startActivity(intent);
             return true;
         }
@@ -138,6 +151,16 @@ public class ChannelListActivity extends AppCompatActivity{
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
             holder.mContentView.setText(mValues.get(position).getName());
+
+            if(mValues.get(position).getThumbnail()!=null)
+            {
+                imageLoader.displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
+            }
+            else
+            {
+                holder.mImageView.setImageResource(R.drawable.channel_picture);
+            }
+
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -180,11 +203,13 @@ public class ChannelListActivity extends AppCompatActivity{
             public final View mView;
             public final TextView mContentView;
             public Channel mItem;
+            public final ImageView mImageView;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
                 mContentView = (TextView) view.findViewById(R.id.content);
+                mImageView = (ImageView) view.findViewById(R.id.channel_picture);
             }
 
             @Override
