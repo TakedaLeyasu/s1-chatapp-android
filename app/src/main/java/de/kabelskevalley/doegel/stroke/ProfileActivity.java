@@ -19,14 +19,12 @@ import de.kabelskevalley.doegel.stroke.entities.User;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private ImageLoader imageLoader;
     private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-        imageLoader = ImageLoader.getInstance(); // Get singleton instance
 
         StorageHelper.Init(this, "stroke");
         user =(User) StorageHelper.getInstance().getObject("user", User.class);
@@ -52,7 +50,7 @@ public class ProfileActivity extends AppCompatActivity {
         {
             ImageView imageView = (ImageView)findViewById(R.id.profile_image);
             EditText editText = (EditText)findViewById(R.id.th_editText);
-            imageLoader.displayImage(user.getThumbnail(),imageView);
+            ImageLoader.getInstance().displayImage(user.getThumbnail(), imageView);
             editText.setText(user.getThumbnail());
         }
 
@@ -70,7 +68,7 @@ public class ProfileActivity extends AppCompatActivity {
         ImageView imageView = (ImageView)findViewById(R.id.profile_image);
         EditText editText = (EditText)findViewById(R.id.th_editText);
 
-        imageLoader.displayImage(editText.getText().toString(), imageView);
+        ImageLoader.getInstance().displayImage(editText.getText().toString(), imageView);
 
         user.setThumbnail(editText.getText().toString());
         StorageHelper.getInstance().storeObject("user", user);

@@ -46,10 +46,10 @@ public class ChannelDetailFragment extends Fragment {
     private List<Message> message_list = new ArrayList<>();
     private HashMap<String,Integer> typing_map = new HashMap<>();
     private boolean typing = false;
-    private ImageLoader imageLoader;
     private  MessageAdapterItem myAdapter;
-
     private ListView listView;
+
+    private User user;
 
 
     /**
@@ -224,9 +224,7 @@ public class ChannelDetailFragment extends Fragment {
             toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
         }
 
-        imageLoader = ImageLoader.getInstance(); // Get singleton instance
-
-
+        user = (User)StorageHelper.getInstance().getObject("user",User.class);
     }
 
     @Override
@@ -339,8 +337,8 @@ public class ChannelDetailFragment extends Fragment {
                         text_view.setText(data.get(position).getMessage());
                         time_view.setText(data.get(position).getTime());
 
-                        if(data.get(position).getThumbnail()!=null)
-                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
+                        if(user.getThumbnail()!=null)
+                            ImageLoader.getInstance().displayImage(user.getThumbnail(), imageView);
 
                         else
                             imageView.setImageResource(R.drawable.profilbild);
@@ -359,7 +357,7 @@ public class ChannelDetailFragment extends Fragment {
                         sender_view.setText(data.get(position).getSender());
 
                         if(data.get(position).getThumbnail()!=null)
-                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
+                            ImageLoader.getInstance().displayImage(data.get(position).getThumbnail(), imageView);
 
                         else
                             imageView.setImageResource(R.drawable.profilbild);

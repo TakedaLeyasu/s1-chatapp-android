@@ -45,7 +45,6 @@ public class ChannelListActivity extends AppCompatActivity{
     private boolean mTwoPane;
 
     private RecyclerView mRecyclerView;
-    private ImageLoader imageLoader;
 
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
@@ -89,8 +88,6 @@ public class ChannelListActivity extends AppCompatActivity{
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-
-        imageLoader = ImageLoader.getInstance(); // Get singleton instance
     }
 
     @Override
@@ -154,7 +151,7 @@ public class ChannelListActivity extends AppCompatActivity{
 
             if(mValues.get(position).getThumbnail()!=null)
             {
-                imageLoader.displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
+                ImageLoader.getInstance().displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
             }
             else
             {
