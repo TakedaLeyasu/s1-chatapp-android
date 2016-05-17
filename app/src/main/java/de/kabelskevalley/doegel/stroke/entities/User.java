@@ -11,4 +11,7 @@ public class User {
     public String getName(){return name;}
     public String getToken(){return token;}
     public String getThumbnail(){return thumbnail;}
+
+    public void setThumbnail(String thumbnail){ this.thumbnail = thumbnail;}
+
 }

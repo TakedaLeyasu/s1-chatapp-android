@@ -16,7 +16,10 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/message_sender_item"/>
+            android:id="@+id/message_sender_item"
+            android:textSize="11dp"
+            android:layout_gravity="end"/>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,8 +35,8 @@
             </TextView>
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:id="@+id/message_image_item"/>
 
         </LinearLayout>

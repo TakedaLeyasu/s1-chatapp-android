@@ -27,11 +27,16 @@ public class Message {
     @JsonProperty("numUsers")
     private int userCount = 0;
 
+    @JsonProperty("thumbnail")
+    private String thumbnail = null;
+
     @JsonIgnore
     private Type type = Type.Unknown;
 
     @JsonIgnore
     private String time = null;
+
+
 
     public Message()
     {
@@ -47,11 +52,21 @@ public class Message {
         this.time = this.getFreshTimestamp();
     }
 
+    public Message(Type type, String sender, String message, String thumbnail)
+    {
+        this.type = type;
+        this.sender = sender;
+        this.message = message;
+        this.time = this.getFreshTimestamp();
+        this.thumbnail = thumbnail;
+    }
+
     public String getMessage() { return message; }
     public String getSender() { return sender; }
     public String getTime() { return time; }
     public int getUserCount() { return userCount; }
     public Type getType() { return type; }
+    public String getThumbnail() { return thumbnail; }
 
     public boolean isMyMessage()
     {

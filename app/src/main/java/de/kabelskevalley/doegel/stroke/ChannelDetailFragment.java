@@ -46,7 +46,11 @@ public class ChannelDetailFragment extends Fragment {
     private List<Message> message_list = new ArrayList<>();
     private HashMap<String,Integer> typing_map = new HashMap<>();
     private boolean typing = false;
-    public ImageLoader imageLoader;
+    private ImageLoader imageLoader;
+    private  MessageAdapterItem myAdapter;
+
+    private ListView listView;
+
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -104,7 +108,7 @@ public class ChannelDetailFragment extends Fragment {
                 public void run() {
                     Message message = ChannelDetailFragment.this.parseMessage(args[0].toString());
                     message_list.add(message);
-                    show_messages();
+                    myAdapter.notifyDataSetChanged();
                 }
             });
         }
@@ -122,7 +126,7 @@ public class ChannelDetailFragment extends Fragment {
                     typing_map.put(info.getSender(),message_list.size()); //Postition der Information wird gespeichert
                     message_list.add(message_temp);
 
-                    show_messages();
+                    myAdapter.notifyDataSetChanged();
 
 
                 }
@@ -142,7 +146,7 @@ public class ChannelDetailFragment extends Fragment {
                         //Postition der "is typing..." Message wird abgerufen und die Message, wenn vorhanden, gelöscht.
                         int position = typing_map.get(info.getSender());
                         message_list.remove(position);
-                        show_messages();
+                        myAdapter.notifyDataSetChanged();
                     }catch (Exception e){}
 
 
@@ -162,7 +166,7 @@ public class ChannelDetailFragment extends Fragment {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "joined :)");
                         message_list.add(message_temp);
-                        show_messages();
+                        myAdapter.notifyDataSetChanged();
                     }
                 });
             } catch (Exception e) {
@@ -181,7 +185,7 @@ public class ChannelDetailFragment extends Fragment {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "left :(");
                         message_list.add(message_temp);
-                        show_messages();
+                        myAdapter.notifyDataSetChanged();
                     }
                 });
             } catch (Exception e) {
@@ -221,6 +225,8 @@ public class ChannelDetailFragment extends Fragment {
         }
 
         imageLoader = ImageLoader.getInstance(); // Get singleton instance
+
+
     }
 
     @Override
@@ -235,9 +241,15 @@ public class ChannelDetailFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
+        listView = (ListView) mRootView.findViewById(R.id.listView);
+        myAdapter = new MessageAdapterItem(getActivity(),0, message_list);
+        listView.setAdapter(myAdapter);
+
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
         EditText message_text = (EditText) mRootView.findViewById(R.id.message_text);
         message_text.addTextChangedListener(textWatcher);
+
+
 
         mSocket.on("new message", onNewMessage);
         mSocket.on("typing", onTyping);
@@ -275,14 +287,6 @@ public class ChannelDetailFragment extends Fragment {
         super.onStop();
     }
 
-    public void show_messages() {
-
-        MessageAdapterItem myAdapter = new MessageAdapterItem(getActivity(), R.layout.message_view_item, message_list);
-
-        ListView listView = (ListView) mRootView.findViewById(R.id.listView);
-        listView.setAdapter(myAdapter);
-    }
-
     public class MessageAdapterItem extends ArrayAdapter<Message> {
 
         Context mContext;
@@ -304,7 +308,8 @@ public class ChannelDetailFragment extends Fragment {
 
 
             // inflate the layout
-  /*          LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+   /*         if(convertView == null
+            LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
             convertView = inflater.inflate(layoutResourceId, parent, false);
 
 
@@ -322,33 +327,42 @@ public class ChannelDetailFragment extends Fragment {
                 case Chat:
 
 
-
                     if (data.get(position).isMyMessage()) {
 
                         LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
                         convertView = inflater.inflate(R.layout.my_message_view, parent, false);
+
                         TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
                         TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
 
                         text_view.setText(data.get(position).getMessage());
                         time_view.setText(data.get(position).getTime());
 
-                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
-                        imageLoader.displayImage("http://i.ytimg.com/i/WaRzDMN6jYNasxzb88qiBg/mq1.jpg?v=4ff585b2", imageView);
+                        if(data.get(position).getThumbnail()!=null)
+                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
+
+                        else
+                            imageView.setImageResource(R.drawable.profilbild);
 
                     } else {
                         LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
                         convertView = inflater.inflate(R.layout.other_message_view, parent, false);
+
                         TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
                         TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
                         TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
+                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
 
                         text_view.setText(data.get(position).getMessage());
                         time_view.setText(data.get(position).getTime());
-                        sender_view.setText(data.get(position).getTime());
+                        sender_view.setText(data.get(position).getSender());
 
-                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
-                        imageLoader.displayImage("http://i.ytimg.com/i/WaRzDMN6jYNasxzb88qiBg/mq1.jpg?v=4ff585b2", imageView);
+                        if(data.get(position).getThumbnail()!=null)
+                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
+
+                        else
+                            imageView.setImageResource(R.drawable.profilbild);
                     }
                     break;
 
@@ -357,7 +371,7 @@ public class ChannelDetailFragment extends Fragment {
                     convertView = inflater.inflate(R.layout.state_view, parent, false);
                     TextView text_view = (TextView) convertView.findViewById(R.id.state_view);
 
-                    text_view.setText(data.get(position).getMessage());
+                    text_view.setText(data.get(position).getSender() + " " + data.get(position).getMessage());
                     break;
             }
 
