@@ -8,34 +8,45 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.github.nkzawa.socketio.client.Socket;
-
-import java.util.List;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
-import de.kabelskevalley.doegel.stroke.entities.Channel;
 import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.HttpLogInTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
-import de.kabelskevalley.doegel.stroke.network.SocketHelper;
 
 public class LoginActivity extends AppCompatActivity implements OnHttpResultListener<User> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_log_in);
-
         StorageHelper.Init(this, "stroke");
+        User user =(User) StorageHelper.getInstance().getObject("user",User.class);
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoader.getInstance().init(config);
+
+       if(user!=null)
+        {
+            Log.i("  Token ", user.getToken());
+            new HttpLogInTask(this, new LogIn_Data(user.getToken())).execute();
+        }
+        else {
+           Log.i("  Token ", "null");
+        }
+        setContentView(R.layout.activity_log_in);
     }
 
     public void logIn(View view)
     {
-        EditText name = (EditText)findViewById(R.id.editText_N);
-        EditText password = (EditText)findViewById(R.id.editText_P);
+        String name = ((EditText)findViewById(R.id.editText_N)).getText().toString();
+        String password = ((EditText)findViewById(R.id.editText_P)).getText().toString();
 
-        LogIn_Data logIn_data = new LogIn_Data(name.getText().toString(), password.getText().toString());
+        name = name.replaceAll(" ","");
+
+        LogIn_Data logIn_data = new LogIn_Data(name, password);
         new HttpLogInTask(this,logIn_data).execute();
     }
 
@@ -43,13 +54,15 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
     {
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
-        //add stuff here
     }
 
     @Override
     public void onResult(User user) {
-        StorageHelper.getInstance()
-                .storeObject("user", user);
+        if (user.getToken() != null) {
+            // only save the user object upon fresh login
+            StorageHelper.getInstance()
+                    .storeObject("user", user);
+        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -66,7 +79,8 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getApplicationContext(), "Server Probleme", Toast.LENGTH_SHORT).show();
+                setContentView(R.layout.activity_log_in);
+                Toast.makeText(getApplicationContext(), "Benutzerdaten sind nicht korrekt!", Toast.LENGTH_SHORT).show();
             }
         });
     }

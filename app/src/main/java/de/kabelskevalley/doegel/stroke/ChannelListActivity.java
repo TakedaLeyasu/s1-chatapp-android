@@ -10,15 +10,21 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 import java.util.List;
 
+import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
-import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.HttpChannelTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
 
@@ -30,7 +36,7 @@ import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class ChannelListActivity extends AppCompatActivity {
+public class ChannelListActivity extends AppCompatActivity{
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -39,6 +45,7 @@ public class ChannelListActivity extends AppCompatActivity {
     private boolean mTwoPane;
 
     private RecyclerView mRecyclerView;
+    private ImageLoader imageLoader;
 
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
@@ -51,6 +58,8 @@ public class ChannelListActivity extends AppCompatActivity {
             Log.e("MainActivity", e.getMessage(), e);
         }
     };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +89,41 @@ public class ChannelListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        imageLoader = ImageLoader.getInstance(); // Get singleton instance
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.logOut)
+        {
+            StorageHelper.getInstance().clear("user");
+            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        if(item.getItemId() == R.id.profile)
+        {
+            Intent intent = new Intent(getApplicationContext(),ProfileActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+
+
 
     @Override
     protected void onResume() {
@@ -108,6 +151,16 @@ public class ChannelListActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
             holder.mContentView.setText(mValues.get(position).getName());
+
+            if(mValues.get(position).getThumbnail()!=null)
+            {
+                imageLoader.displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
+            }
+            else
+            {
+                holder.mImageView.setImageResource(R.drawable.channel_picture);
+            }
+
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -150,11 +203,13 @@ public class ChannelListActivity extends AppCompatActivity {
             public final View mView;
             public final TextView mContentView;
             public Channel mItem;
+            public final ImageView mImageView;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
                 mContentView = (TextView) view.findViewById(R.id.content);
+                mImageView = (ImageView) view.findViewById(R.id.channel_picture);
             }
 
             @Override

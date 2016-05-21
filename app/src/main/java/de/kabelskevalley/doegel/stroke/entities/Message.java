@@ -1,6 +1,7 @@
 package de.kabelskevalley.doegel.stroke.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Calendar;
@@ -8,9 +9,7 @@ import java.util.GregorianCalendar;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 
-/**
- * Created by Hartmut on 13.04.2016.
- */
+@JsonIgnoreProperties(value={"_id", "__v"})
 public class Message {
 
     public enum Type {
@@ -28,11 +27,16 @@ public class Message {
     @JsonProperty("numUsers")
     private int userCount = 0;
 
+    @JsonProperty("thumbnail")
+    private String thumbnail = null;
+
     @JsonIgnore
     private Type type = Type.Unknown;
 
     @JsonIgnore
     private String time = null;
+
+
 
     public Message()
     {
@@ -48,11 +52,21 @@ public class Message {
         this.time = this.getFreshTimestamp();
     }
 
+    public Message(Type type, String sender, String message, String thumbnail)
+    {
+        this.type = type;
+        this.sender = sender;
+        this.message = message;
+        this.time = this.getFreshTimestamp();
+        this.thumbnail = thumbnail;
+    }
+
     public String getMessage() { return message; }
     public String getSender() { return sender; }
     public String getTime() { return time; }
     public int getUserCount() { return userCount; }
     public Type getType() { return type; }
+    public String getThumbnail() { return thumbnail; }
 
     public boolean isMyMessage()
     {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Channel {
     private String id;
     private String name;
+    private String thumbnail;
 
     public String getId() {
         return this.id;
@@ -13,5 +14,9 @@ public class Channel {
 
     public String getName() {
         return this.name;
+    }
+
+    public String getThumbnail() {
+        return this.thumbnail;
     }
 }

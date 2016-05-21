@@ -2,30 +2,27 @@ package de.kabelskevalley.doegel.stroke;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
@@ -47,7 +44,13 @@ public class ChannelDetailFragment extends Fragment {
      * represents.
      */
     private List<Message> message_list = new ArrayList<>();
+    private HashMap<String,Integer> typing_map = new HashMap<>();
     private boolean typing = false;
+    private ImageLoader imageLoader;
+    private  MessageAdapterItem myAdapter;
+
+    private ListView listView;
+
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -66,8 +69,6 @@ public class ChannelDetailFragment extends Fragment {
         public void onClick(View v) {
             EditText message = ((EditText) mRootView.findViewById(R.id.message_text));
             mSocket.emit("new message", message.getText());
-
-            typing = false; // We do not want to emit "stop typing" on sending.
             message.setText("");
         }
     };
@@ -107,7 +108,7 @@ public class ChannelDetailFragment extends Fragment {
                 public void run() {
                     Message message = ChannelDetailFragment.this.parseMessage(args[0].toString());
                     message_list.add(message);
-                    show_messages();
+                    myAdapter.notifyDataSetChanged();
                 }
             });
         }
@@ -121,8 +122,13 @@ public class ChannelDetailFragment extends Fragment {
                 public void run() {
                     Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                     Message message_temp = new Message(Message.Type.Info, info.getSender(), " is typing...");
+
+                    typing_map.put(info.getSender(),message_list.size()); //Postition der Information wird gespeichert
                     message_list.add(message_temp);
-                    show_messages();
+
+                    myAdapter.notifyDataSetChanged();
+
+
                 }
             });
         }
@@ -135,10 +141,15 @@ public class ChannelDetailFragment extends Fragment {
                 @Override
                 public void run() {
                     Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
-                    Message message_temp = new Message(Message.Type.Info, info.getSender(), "stopped typing...");
-                    message_list.add(message_temp);
 
-                    show_messages();
+                    try{
+                        //Postition der "is typing..." Message wird abgerufen und die Message, wenn vorhanden, gelöscht.
+                        int position = typing_map.get(info.getSender());
+                        message_list.remove(position);
+                        myAdapter.notifyDataSetChanged();
+                    }catch (Exception e){}
+
+
                 }
             });
         }
@@ -155,7 +166,7 @@ public class ChannelDetailFragment extends Fragment {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "joined :)");
                         message_list.add(message_temp);
-                        show_messages();
+                        myAdapter.notifyDataSetChanged();
                     }
                 });
             } catch (Exception e) {
@@ -174,7 +185,7 @@ public class ChannelDetailFragment extends Fragment {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "left :(");
                         message_list.add(message_temp);
-                        show_messages();
+                        myAdapter.notifyDataSetChanged();
                     }
                 });
             } catch (Exception e) {
@@ -212,6 +223,10 @@ public class ChannelDetailFragment extends Fragment {
             Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.detail_toolbar);
             toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
         }
+
+        imageLoader = ImageLoader.getInstance(); // Get singleton instance
+
+
     }
 
     @Override
@@ -226,9 +241,15 @@ public class ChannelDetailFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
+        listView = (ListView) mRootView.findViewById(R.id.listView);
+        myAdapter = new MessageAdapterItem(getActivity(),0, message_list);
+        listView.setAdapter(myAdapter);
+
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
         EditText message_text = (EditText) mRootView.findViewById(R.id.message_text);
         message_text.addTextChangedListener(textWatcher);
+
+
 
         mSocket.on("new message", onNewMessage);
         mSocket.on("typing", onTyping);
@@ -266,14 +287,6 @@ public class ChannelDetailFragment extends Fragment {
         super.onStop();
     }
 
-    public void show_messages() {
-
-        MessageAdapterItem myAdapter = new MessageAdapterItem(getActivity(), R.layout.message_view_item, message_list);
-
-        ListView listView = (ListView) mRootView.findViewById(R.id.listView);
-        listView.setAdapter(myAdapter);
-    }
-
     public class MessageAdapterItem extends ArrayAdapter<Message> {
 
         Context mContext;
@@ -293,25 +306,18 @@ public class ChannelDetailFragment extends Fragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-        /*
-         * The convertView argument is essentially a "ScrapView" as described is Lucas post
-         * http://lucasr.org/2012/04/05/performance-tips-for-androids-listview/
-         * It will have a non-null value when ListView is asking you recycle the row layout.
-         * So, when convertView is not null, you should simply update its contents instead of inflating a new row layout.
-         */
-            if (convertView == null) {
-                // inflate the layout
-                LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
-                convertView = inflater.inflate(layoutResourceId, parent, false);
-            }
 
+            // inflate the layout
+   /*         if(convertView == null
+            LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+            convertView = inflater.inflate(layoutResourceId, parent, false);
 
-            // get the TextView and then set the text (item name) and tag (item ID) values
 
             TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
             TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
             TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
             LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.message_layout);
+            */
 
             switch (data.get(position).getType())
             {
@@ -319,40 +325,56 @@ public class ChannelDetailFragment extends Fragment {
                     break;
 
                 case Chat:
+
+
                     if (data.get(position).isMyMessage()) {
-                        layout.setBackgroundColor(Color.YELLOW);
+
+                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                        convertView = inflater.inflate(R.layout.my_message_view, parent, false);
+
+                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
+                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
+
+                        text_view.setText(data.get(position).getMessage());
+                        time_view.setText(data.get(position).getTime());
+
+                        if(data.get(position).getThumbnail()!=null)
+                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
+
+                        else
+                            imageView.setImageResource(R.drawable.profilbild);
+
                     } else {
+                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                        convertView = inflater.inflate(R.layout.other_message_view, parent, false);
+
+                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
+                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+                        TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
+                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
+
+                        text_view.setText(data.get(position).getMessage());
+                        time_view.setText(data.get(position).getTime());
                         sender_view.setText(data.get(position).getSender());
 
-                        layout.setBackgroundColor(Color.MAGENTA);
-                        layout.setGravity(Gravity.END);
-                        text_view.setGravity(Gravity.END);
-                        sender_view.setGravity(Gravity.END);
-                        time_view.setGravity(Gravity.START);
+                        if(data.get(position).getThumbnail()!=null)
+                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
 
-                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                        params.gravity = Gravity.END;
-                        layout.setLayoutParams(params);
+                        else
+                            imageView.setImageResource(R.drawable.profilbild);
                     }
                     break;
 
                 case Info:
-                    sender_view.setText(data.get(position).getSender());
+                    LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                    convertView = inflater.inflate(R.layout.state_view, parent, false);
+                    TextView text_view = (TextView) convertView.findViewById(R.id.state_view);
 
-                    layout.setBackgroundColor(Color.CYAN);
-                    layout.setGravity(Gravity.CENTER);
-                    text_view.setGravity(Gravity.CENTER);
-                    sender_view.setGravity(Gravity.CENTER);
-                    time_view.setGravity(Gravity.CENTER);
-
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    params.gravity = Gravity.CENTER;
-                    layout.setLayoutParams(params);
+                    text_view.setText(data.get(position).getSender() + " " + data.get(position).getMessage());
                     break;
             }
 
-            text_view.setText(data.get(position).getMessage());
-            time_view.setText(data.get(position).getTime());
 
             return convertView;
         }
