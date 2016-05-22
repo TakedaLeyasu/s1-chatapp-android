@@ -151,9 +151,9 @@ public class ChannelDetailFragment extends Fragment {
                 @Override
                 public void run() {
                     Message message = ChannelDetailFragment.this.parseMessage(args[0].toString());
+
                     deleteOldTypingMessage();
                     message_list.add(message);
-                    generateNewTypingMessage();
                     myAdapter.notifyDataSetChanged();
                 }
             });
@@ -322,8 +322,8 @@ public class ChannelDetailFragment extends Fragment {
         mSocket.off("typing", onTyping);
         mSocket.off("stop typing", onStopTyping);
 
-        mSocket.off("user joined", onNewMessage);
-        mSocket.off("user left", onNewMessage);
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
     }
 
     @Override
@@ -407,7 +407,7 @@ public class ChannelDetailFragment extends Fragment {
                     text_view.setText(data.get(position).getSender() + " " + data.get(position).getMessage());
                     break;
             }
-            if (data.get(position).getChecked() == false)
+            if (!data.get(position).getChecked())
                 convertView.setBackgroundColor(Color.argb(0, 255, 255, 255));
 
             else
