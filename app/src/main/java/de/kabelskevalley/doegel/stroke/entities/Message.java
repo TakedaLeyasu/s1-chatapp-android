@@ -36,6 +36,10 @@ public class Message {
     @JsonIgnore
     private String time = null;
 
+    @JsonIgnore
+    private Boolean checked = false;
+
+
 
 
     public Message()
@@ -67,11 +71,17 @@ public class Message {
     public int getUserCount() { return userCount; }
     public Type getType() { return type; }
     public String getThumbnail() { return thumbnail; }
+    public Boolean getChecked(){return checked;};
+
+    public void setChecked(Boolean checked) {this.checked = checked;}
 
     public boolean isMyMessage()
     {
-        User user = (User) StorageHelper.getInstance().getObject("user", User.class);
-        return this.getSender().equals(user.getName());
+        try {
+            User user = (User) StorageHelper.getInstance().getObject("user", User.class);
+            return this.getSender().equals(user.getName());
+        }
+        catch(Exception e){return false;}
     }
 
     private String getFreshTimestamp()
