@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.List;
 
+import de.kabelskevalley.doegel.stroke.Constants;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
 
 public class HttpChannelTask extends AsyncTask<Void, Void, List<Channel>> {
@@ -23,7 +24,7 @@ public class HttpChannelTask extends AsyncTask<Void, Void, List<Channel>> {
     @Override
     protected List<Channel> doInBackground(Void... params) {
         try {
-            final String url = "http://chat.kabelskevalley.com:3000/api/channels";
+            final String url = Constants.BASE_URL + "/api/channels";
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             Channel[] channels = restTemplate.getForObject(url, Channel[].class);

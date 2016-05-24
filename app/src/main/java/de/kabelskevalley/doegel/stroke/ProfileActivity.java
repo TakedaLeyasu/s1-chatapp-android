@@ -82,10 +82,10 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void change_thumbnail(String uri)
     {
-        ImageView imageView = (ImageView)findViewById(R.id.profile_image);
-        ImageLoader.getInstance().displayImage(uri, imageView);
-        user.setThumbnail(uri);
-        StorageHelper.getInstance().storeObject("user", user);
+        //ImageView imageView = (ImageView)findViewById(R.id.profile_image);
+        //ImageLoader.getInstance().displayImage(uri, imageView);
+        //TODO user.setThumbnail(uri);
+        //StorageHelper.getInstance().storeObject("user", user);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class ProfileActivity extends AppCompatActivity {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                user.setThumbnail(Uri.fromFile(photoFile).toString());
+                //user.setThumbnail(Uri.fromFile(photoFile).toString());
 
                 StorageHelper.getInstance().storeObject("user", user);
 
