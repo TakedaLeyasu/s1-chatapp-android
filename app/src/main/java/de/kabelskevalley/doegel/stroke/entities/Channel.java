@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(value={"_id", "__v"})
 public class Channel {
-    private String id;
+    protected String id;
     private String name;
     private String thumbnail;
 
@@ -18,5 +18,18 @@ public class Channel {
 
     public String getThumbnail() {
         return this.thumbnail;
+    }
+
+    public Channel(String name, String thumbnail)
+    {
+        this.name = name;
+        this.thumbnail = thumbnail;
+        this.id = generate_id();
+    }
+    public Channel () {}
+
+    private String generate_id()
+    {
+        return name + thumbnail;
     }
 }
