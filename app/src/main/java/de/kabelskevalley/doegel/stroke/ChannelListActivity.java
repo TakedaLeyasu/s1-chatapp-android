@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -49,11 +51,21 @@ public class ChannelListActivity extends AppCompatActivity{
         @Override
         public void onResult(List<Channel> channels) {
             mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(channels));
+
+            SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+            if (swr != null) {
+                swr.setRefreshing(false);
+            }
         }
 
         @Override
         public void onError(Exception e) {
             Log.e("MainActivity", e.getMessage(), e);
+
+            SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+            if (swr != null) {
+                swr.setRefreshing(false);
+            }
         }
     };
 
@@ -72,8 +84,16 @@ public class ChannelListActivity extends AppCompatActivity{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getBaseContext() ,CreateChannelActivity.class);
+                Intent intent = new Intent(getBaseContext(), CreateChannelActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+        swr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new HttpChannelTask(mChannelListener).execute();
             }
         });
 
