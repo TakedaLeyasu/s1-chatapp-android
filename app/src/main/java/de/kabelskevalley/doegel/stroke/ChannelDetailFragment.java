@@ -265,8 +265,7 @@ public class ChannelDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_NAME)) {
-            Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.detail_toolbar);
-            toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
+            getActivity().setTitle(getArguments().getString(ARG_ITEM_NAME));
         }
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
