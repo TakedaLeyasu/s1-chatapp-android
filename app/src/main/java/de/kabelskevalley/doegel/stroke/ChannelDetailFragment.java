@@ -24,8 +24,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.Socket;
+
+import io.socket.emitter.Emitter;
+import io.socket.client.Socket;
+
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
@@ -46,20 +48,15 @@ public class ChannelDetailFragment extends Fragment {
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_ITEM_NAME = "item_name";
 
-
-
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
     private List<Message> message_list = new ArrayList<>();
-    private List<String> typingPersons = new ArrayList<>();
+    private List<User> typingPersons = new ArrayList<>();
     private boolean typing = false;
     private MessageAdapterItem myAdapter;
     private ListView listView;
-
-    private User user;
-
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -73,6 +70,11 @@ public class ChannelDetailFragment extends Fragment {
      */
     private Socket mSocket;
 
+    /**
+     * This is the channel we want to join for this fragment.
+     */
+    private String mChannel;
+
     private View.OnClickListener onSendClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -85,32 +87,33 @@ public class ChannelDetailFragment extends Fragment {
         @Override
         public boolean onLongClick(View v) {
 
-         //   image_choser();
+            //   image_choser();
             return false;
         }
     };
 
-    private void deleteOldTypingMessage()
-    {
+    private void deleteOldTypingMessage() {
         try {
             if (message_list.get((message_list.size() - 1)).getType() == Message.Type.Info
                     && message_list.get((message_list.size() - 1)).getMessage().contains("schreib"))
                 message_list.remove(message_list.size() - 1);
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
+
     private void generateNewTypingMessage() {
-        Message message_temp = null;
+        Message message_temp;
         switch (typingPersons.size()) {
             case 0:
+                message_temp = null;
                 break;
+
             case 1:
                 message_temp = new Message(Message.Type.Info, typingPersons.get(0), "schreibt...");
                 break;
-            case 2:
-                message_temp = new Message(Message.Type.Info, typingPersons.get(0) + " und " + typingPersons.get(1), "schreiben...");
-                break;
+
             default:
-                message_temp = new Message(Message.Type.Info, String.valueOf(typingPersons.size()), "Personen schreiben...");
+                message_temp = new Message(Message.Type.Info, typingPersons.get(0), " und " + String.valueOf(typingPersons.size() - 1) + " weitere Personen schreiben...");
                 break;
         }
         if (message_temp != null)
@@ -212,7 +215,6 @@ public class ChannelDetailFragment extends Fragment {
                 });
             } catch (Exception e) {
             }
-            ;
         }
     };
 
@@ -255,7 +257,7 @@ public class ChannelDetailFragment extends Fragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public ChannelDetailFragment() {
-        mSocket = SocketHelper.getSocket();
+
     }
 
     @Override
@@ -267,11 +269,12 @@ public class ChannelDetailFragment extends Fragment {
             toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
         }
 
-        user = (User) StorageHelper.getInstance().getObject("user", User.class);
-        act = getActivity();
+        if (getArguments().containsKey(ARG_ITEM_ID)) {
+            mChannel = getArguments().getString(ARG_ITEM_ID);
+        }
 
+        mSocket = SocketHelper.getSocket();
     }
-    private Activity act;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -304,10 +307,15 @@ public class ChannelDetailFragment extends Fragment {
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
 
+        // connect
         mSocket.connect();
 
+        // authorize the current user to chat
         User user = (User) StorageHelper.getInstance().getObject("user", User.class);
-        mSocket.emit("add user", user.getName());
+        mSocket.emit("add user", user.getToken());
+
+        // join the selected channel
+        mSocket.emit("join", mChannel);
     }
 
     @Override
@@ -315,7 +323,9 @@ public class ChannelDetailFragment extends Fragment {
         super.onPause();
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(null);
-        mSocket.emit("user left");
+
+        // leave the channel
+        mSocket.emit("leave", mChannel);
 
         mSocket.disconnect();
         mSocket.off("new message", onNewMessage);
@@ -324,13 +334,6 @@ public class ChannelDetailFragment extends Fragment {
 
         mSocket.off("user joined", onUserJoined);
         mSocket.off("user left", onUserLeft);
-    }
-
-    @Override
-    public void onStop() {
-        mSocket.emit("user left");
-        mSocket.disconnect();
-        super.onStop();
     }
 
     public class MessageAdapterItem extends ArrayAdapter<Message> {
@@ -351,68 +354,47 @@ public class ChannelDetailFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+            Message message = data.get(position);
 
-            switch (data.get(position).getType()) {
+            switch (message.getType()) {
                 case Unknown:
                     break;
 
                 case Chat:
-
-
-                    if (data.get(position).isMyMessage()) {
-
-                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                    if (message.isMyMessage()) {
                         convertView = inflater.inflate(R.layout.my_message_view, parent, false);
-
-                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
-                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
-                        ImageView imageView = (ImageView) convertView.findViewById(R.id.message_image_item);
-
-                        text_view.setText(data.get(position).getMessage());
-                        time_view.setText(data.get(position).getTime());
-
-                        if (user.getThumbnail() != null)
-                            ImageLoader.getInstance().displayImage(user.getThumbnail(), imageView);
-
-                        else
-                            imageView.setImageResource(R.drawable.profilbild);
-
-
                     } else {
-                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
                         convertView = inflater.inflate(R.layout.other_message_view, parent, false);
 
-                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
-                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
                         TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
-                        ImageView imageView = (ImageView) convertView.findViewById(R.id.message_image_item);
-
-                        text_view.setText(data.get(position).getMessage());
-                        time_view.setText(data.get(position).getTime());
-                        sender_view.setText(data.get(position).getSender());
-
-                        if (data.get(position).getThumbnail() != null)
-                            ImageLoader.getInstance().displayImage(data.get(position).getThumbnail(), imageView);
-
-                        else
-                            imageView.setImageResource(R.drawable.profilbild);
+                        sender_view.setText(message.getSender().getName());
                     }
+
+                    TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
+                    TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+                    ImageView imageView = (ImageView) convertView.findViewById(R.id.message_image_item);
+
+                    text_view.setText(message.getMessage());
+                    time_view.setText(message.getTime());
+
+                    if (message.getSender().getThumbnail() != null)
+                        ImageLoader.getInstance().displayImage(message.getSender().getThumbnail(), imageView);
+                    else
+                        imageView.setImageResource(R.drawable.profilbild);
                     break;
 
                 case Info:
-                    LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
                     convertView = inflater.inflate(R.layout.state_view, parent, false);
-                    TextView text_view = (TextView) convertView.findViewById(R.id.state_view);
 
-                    text_view.setText(data.get(position).getSender() + " " + data.get(position).getMessage());
+                    TextView state_view = (TextView) convertView.findViewById(R.id.state_view);
+                    state_view.setText(message.getSender().getName() + " " + message.getMessage());
                     break;
             }
-            if (!data.get(position).getChecked())
-                convertView.setBackgroundColor(Color.argb(0, 255, 255, 255));
-
-            else
+            if (message.getChecked())
                 convertView.setBackgroundColor(Color.argb(50, 0, 0, 0));
-
+            else
+                convertView.setBackgroundColor(Color.argb(0, 255, 255, 255));
 
             return convertView;
         }
@@ -429,16 +411,14 @@ public class ChannelDetailFragment extends Fragment {
                                                   long id, boolean checked) {
 
                 //Ausgewählte Items werden in Liste aufgenommen und markiert
-                if (checked && message_list.get(position).getType()!=Message.Type.Info) {
+                if (checked && message_list.get(position).getType() != Message.Type.Info) {
                     message_list.get(position).setChecked(true);
                     itemPositions.add(position);
-                    for (int i = 0;i<itemPositions.size()-1;i++)
-                    {
-                        if(itemPositions.get(i)>itemPositions.get(i+1))
-                        {
+                    for (int i = 0; i < itemPositions.size() - 1; i++) {
+                        if (itemPositions.get(i) > itemPositions.get(i + 1)) {
                             int temp = itemPositions.get(i);
-                            itemPositions.set(i,itemPositions.get(i+1));
-                            itemPositions.set(i+1,temp);
+                            itemPositions.set(i, itemPositions.get(i + 1));
+                            itemPositions.set(i + 1, temp);
                         }
                     }
                 } else {
@@ -523,13 +503,12 @@ public class ChannelDetailFragment extends Fragment {
         for (int i = 0; i < itemPositions.size(); i++) {
             position = itemPositions.get(i);
             text += message_list.get(position).getMessage().toString();
-            if(i<itemPositions.size()-1)
-                text+= " | ";
+            if (i < itemPositions.size() - 1)
+                text += " | ";
         }
 
-        if(!text.isEmpty())
-        {
-            ClipboardManager clipboard = (ClipboardManager) act.getSystemService(Context.CLIPBOARD_SERVICE);
+        if (!text.isEmpty()) {
+            ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
             clipboard.setText(text);
         }
 

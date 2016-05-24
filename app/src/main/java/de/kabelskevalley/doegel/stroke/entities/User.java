@@ -6,12 +6,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class User {
     private String token;
     private String name;
+    private String username;
     private String thumbnail;
 
     public String getName(){return name;}
+    public String getUsername(){return username;}
     public String getToken(){return token;}
     public String getThumbnail(){return thumbnail;}
-
-    public void setThumbnail(String thumbnail){ this.thumbnail = thumbnail;}
-
 }

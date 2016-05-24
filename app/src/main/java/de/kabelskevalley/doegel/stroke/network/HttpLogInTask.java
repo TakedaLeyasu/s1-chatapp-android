@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import de.kabelskevalley.doegel.stroke.Constants;
 import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
 
@@ -26,8 +27,8 @@ public class HttpLogInTask extends AsyncTask<LogIn_Data, LogIn_Data, User> {
     protected User doInBackground(LogIn_Data... params) {
         try {
             String url = logIn_data.hasToken()
-                    ? "http://chat.kabelskevalley.com:3000/api/auth" // check auth token
-                    : "http://chat.kabelskevalley.com:3000/api/login"; // do a full login
+                    ? Constants.BASE_URL + "/api/auth" // check auth token
+                    : Constants.BASE_URL + "/api/login"; // do a full login
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
