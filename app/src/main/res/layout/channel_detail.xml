@@ -4,34 +4,41 @@
     tools:context="de.kabelskevalley.doegel.stroke.ChannelDetailFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10">
+    android:orientation="vertical">
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="9"
+        android:layout_weight="1"
+        android:dividerHeight="0dp"
+        android:divider="@null"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
         android:id="@+id/listView"
-        android:divider="#00000000"/>
+        android:scrollbars="vertical"
+        android:scrollbarStyle="outsideOverlay"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:weightSum="10">
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <EditText
             android:id="@+id/message_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="7"
-            android:padding="16dp"/>
+            android:layout_weight="1"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true"/>
 
         <Button
             android:id="@+id/message_send"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
             android:text="Send" />
 
     </LinearLayout>
