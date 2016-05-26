@@ -8,12 +8,21 @@ public class LogIn_Data {
     private String password;
     private String name;
     private String token;
+    private String thumbnail;
 
     public LogIn_Data(String username, String password)
     {
         this.username = username;
         this.password = password;
         this.name = username;
+        this.thumbnail = null;
+    }
+    public LogIn_Data(String username, String password,String thumbnail)
+    {
+        this.username = username;
+        this.password = password;
+        this.name = username;
+        this.thumbnail = thumbnail;
     }
 
     public LogIn_Data(String token)
@@ -25,6 +34,7 @@ public class LogIn_Data {
     public String getName(){return name;}
     public String getPassword(){return password;}
     public String getToken(){return token;}
+    public String getThumbnail(){return thumbnail;}
 
     public boolean hasToken()
     {

@@ -40,12 +40,11 @@
         android:layout_height="wrap_content"
         android:inputType="textEmailAddress"
         android:ems="11"
-        android:id="@+id/editText2"
+        android:id="@+id/editText_thumbnail"
         android:layout_below="@+id/editText_NewName"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:text=""
-        android:hint="E-Mail"/>
+        android:hint="Thumbnail URL"/>
 
     <EditText
         android:layout_width="match_parent"
