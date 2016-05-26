@@ -34,11 +34,19 @@ public class RegistrationActivity extends AppCompatActivity implements OnHttpRes
     public void create_profile(View view)
     {
         String name = ((EditText)findViewById(R.id.editText_NewName)).getText().toString();
+        String thumbnail =  ((EditText)findViewById(R.id.editText_thumbnail)).getText().toString();
         String password1 = ((EditText)findViewById(R.id.editText_p1)).getText().toString();
         String password2 = ((EditText)findViewById(R.id.editText_p2)).getText().toString();
 
         if(check_registrationData(password1,password2,name)) {
-            LogIn_Data logIn_data = new LogIn_Data(name, password1);
+            LogIn_Data logIn_data;
+            if(thumbnail.isEmpty())
+                logIn_data = new LogIn_Data(name, password1);
+            else
+                logIn_data = new LogIn_Data(name, password1,thumbnail);
+
+
+
             new HttpRegistrationTask(this, logIn_data).execute();
         }
 
