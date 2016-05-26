@@ -2,54 +2,47 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
 
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:layout_gravity="start">
 <RelativeLayout
-    android:layout_width="110dp"
+    android:layout_width="wrap_content"
     android:layout_gravity="start"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="0dp"
+    android:layout_margin="2dp"
+    android:background="@drawable/bubble_own"
     >
 
-     <ImageView
-         android:id="@+id/owm_bubble"
-         android:layout_width="300dp"
-         android:layout_height="100dp"
-         android:src="@drawable/bubble_own"
-         android:layout_alignParentLeft="true"
-         android:layout_alignParentStart="true" />
 
-
-       <ImageView
+    <ImageView
            android:layout_width="40dp"
            android:layout_height="40dp"
            android:id="@+id/message_image_item"
-           android:layout_alignParentTop="true"
-           android:layout_alignParentLeft="true"
-           android:layout_alignParentStart="true" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="0dp"
             android:minWidth="0dp"
             android:gravity="left"
-            android:layout_toEndOf="@id/message_image_item"
-            android:layout_toRightOf="@id/message_image_item"
             android:layout_below="@id/message_image_item"
-            android:id="@+id/message_text_item">
+            android:id="@+id/message_text_item"
+            android:textColor="#000000">
         </TextView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_alignBottom="@id/owm_bubble"
-            android:layout_alignRight="@id/owm_bubble"
-            android:layout_alignEnd="@id/owm_bubble"
             android:id="@+id/message_time_item"
             android:textSize="8sp"
-            android:layout_above="@id/message_image_item">
+            android:textColor="#000000"
+            android:layout_below="@id/message_text_item"
+            android:layout_alignRight="@id/message_text_item">
+
         </TextView>
 
 </RelativeLayout>
