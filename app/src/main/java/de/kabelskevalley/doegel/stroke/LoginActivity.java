@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -25,7 +26,13 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
         StorageHelper.Init(this, "stroke");
         User user =(User) StorageHelper.getInstance().getObject("user",User.class);
 
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+        DisplayImageOptions options = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .build();
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
+                .defaultDisplayImageOptions(options)
+                .build();
         ImageLoader.getInstance().init(config);
 
        if(user!=null)
@@ -37,6 +44,9 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
            Log.i("  Token ", "null");
         }
         setContentView(R.layout.activity_log_in);
+
+
+
     }
 
     public void logIn(View view)

@@ -4,13 +4,11 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-
     <ImageView
         android:id="@+id/channel_picture"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_margin="@dimen/text_margin"
-        android:src="@drawable/profilbild"/>
+        android:layout_margin="@dimen/image_margin"
+        android:layout_width="@dimen/image_size"
+        android:layout_height="@dimen/image_size"/>
 
     <TextView
         android:id="@+id/content"

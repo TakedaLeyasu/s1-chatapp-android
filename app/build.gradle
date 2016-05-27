@@ -36,7 +36,7 @@ dependencies {
     compile 'com.android.support:support-v4:23.2.1'
     compile 'com.android.support:recyclerview-v7:23.2.1'
     compile 'com.android.support:design:23.2.1'
-    compile 'com.github.nkzawa:socket.io-client:0.6.0'
+    compile 'io.socket:socket.io-client:0.7.0'
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.3.2'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'

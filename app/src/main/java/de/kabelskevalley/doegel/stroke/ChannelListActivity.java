@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -45,17 +46,26 @@ public class ChannelListActivity extends AppCompatActivity{
     private boolean mTwoPane;
 
     private RecyclerView mRecyclerView;
-    private ImageLoader imageLoader;
 
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
         public void onResult(List<Channel> channels) {
             mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(channels));
+
+            SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+            if (swr != null) {
+                swr.setRefreshing(false);
+            }
         }
 
         @Override
         public void onError(Exception e) {
             Log.e("MainActivity", e.getMessage(), e);
+
+            SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+            if (swr != null) {
+                swr.setRefreshing(false);
+            }
         }
     };
 
@@ -74,8 +84,16 @@ public class ChannelListActivity extends AppCompatActivity{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(getBaseContext(), CreateChannelActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
+        swr.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new HttpChannelTask(mChannelListener).execute();
             }
         });
 
@@ -89,8 +107,6 @@ public class ChannelListActivity extends AppCompatActivity{
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-
-        imageLoader = ImageLoader.getInstance(); // Get singleton instance
     }
 
     @Override
@@ -119,11 +135,6 @@ public class ChannelListActivity extends AppCompatActivity{
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-
-
-
 
     @Override
     protected void onResume() {
@@ -154,7 +165,7 @@ public class ChannelListActivity extends AppCompatActivity{
 
             if(mValues.get(position).getThumbnail()!=null)
             {
-                imageLoader.displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
+                ImageLoader.getInstance().displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
             }
             else
             {

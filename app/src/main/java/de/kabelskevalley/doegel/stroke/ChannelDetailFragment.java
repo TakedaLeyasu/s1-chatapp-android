@@ -2,14 +2,21 @@ package de.kabelskevalley.doegel.stroke;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
+import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -17,18 +24,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.Socket;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Message;
 import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.SocketHelper;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 /**
  * A fragment representing a single Channel detail screen.
@@ -39,18 +45,16 @@ import de.kabelskevalley.doegel.stroke.network.SocketHelper;
 public class ChannelDetailFragment extends Fragment {
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_ITEM_NAME = "item_name";
+
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
     private List<Message> message_list = new ArrayList<>();
-    private HashMap<String,Integer> typing_map = new HashMap<>();
+    private List<String> typingPersons = new ArrayList<>();
     private boolean typing = false;
-    private ImageLoader imageLoader;
-    private  MessageAdapterItem myAdapter;
-
+    private MessageAdapterItem myAdapter;
     private ListView listView;
-
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -64,6 +68,11 @@ public class ChannelDetailFragment extends Fragment {
      */
     private Socket mSocket;
 
+    /**
+     * This is the channel we want to join for this fragment.
+     */
+    private String mChannel;
+
     private View.OnClickListener onSendClicked = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -72,6 +81,42 @@ public class ChannelDetailFragment extends Fragment {
             message.setText("");
         }
     };
+    private View.OnLongClickListener onSendLongClicked = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+
+            //   image_choser();
+            return false;
+        }
+    };
+
+    private void deleteOldTypingMessage() {
+        try {
+            if (message_list.get((message_list.size() - 1)).getType() == Message.Type.Info
+                    && message_list.get((message_list.size() - 1)).getMessage().contains("schreib"))
+                message_list.remove(message_list.size() - 1);
+        } catch (Exception e) {
+        }
+    }
+
+    private void generateNewTypingMessage() {
+        Message message_temp;
+        switch (typingPersons.size()) {
+            case 0:
+                message_temp = null;
+                break;
+
+            case 1:
+                message_temp = new Message(Message.Type.Info, null, typingPersons.get(0) +" schreibt...");
+                break;
+
+            default:
+                message_temp = new Message(Message.Type.Info, null, typingPersons.get(0) +" und " + String.valueOf(typingPersons.size() - 1) + " weitere Personen schreiben...");
+                break;
+        }
+        if (message_temp != null)
+            message_list.add(message_temp);
+    }
 
     private TextWatcher textWatcher = new TextWatcher() {
         @Override
@@ -107,8 +152,11 @@ public class ChannelDetailFragment extends Fragment {
                 @Override
                 public void run() {
                     Message message = ChannelDetailFragment.this.parseMessage(args[0].toString());
+
+                    deleteOldTypingMessage();
                     message_list.add(message);
                     myAdapter.notifyDataSetChanged();
+                    listView.setSelection(myAdapter.getCount() - 1);
                 }
             });
         }
@@ -120,15 +168,13 @@ public class ChannelDetailFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+
                     Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
-                    Message message_temp = new Message(Message.Type.Info, info.getSender(), " is typing...");
-
-                    typing_map.put(info.getSender(),message_list.size()); //Postition der Information wird gespeichert
-                    message_list.add(message_temp);
-
+                    typingPersons.add(info.getSender().getUsername()); //Schreibende Person wird gespeichert
+                    deleteOldTypingMessage();
+                    generateNewTypingMessage();
                     myAdapter.notifyDataSetChanged();
-
-
+                    listView.setSelection(myAdapter.getCount() - 1);
                 }
             });
         }
@@ -140,16 +186,14 @@ public class ChannelDetailFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+
                     Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
-
-                    try{
-                        //Postition der "is typing..." Message wird abgerufen und die Message, wenn vorhanden, gelöscht.
-                        int position = typing_map.get(info.getSender());
-                        message_list.remove(position);
-                        myAdapter.notifyDataSetChanged();
-                    }catch (Exception e){}
-
-
+                    typingPersons.remove(info.getSender().getUsername());
+                    Log.i("Liste",typingPersons.toString());
+                    deleteOldTypingMessage();
+                    generateNewTypingMessage();
+                    myAdapter.notifyDataSetChanged();
+                    listView.setSelection(myAdapter.getCount() - 1);
                 }
             });
         }
@@ -165,13 +209,15 @@ public class ChannelDetailFragment extends Fragment {
                     public void run() {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "joined :)");
+                        deleteOldTypingMessage();
                         message_list.add(message_temp);
+                        generateNewTypingMessage();
                         myAdapter.notifyDataSetChanged();
+                        listView.setSelection(myAdapter.getCount() - 1);
                     }
                 });
             } catch (Exception e) {
             }
-            ;
         }
     };
 
@@ -184,8 +230,11 @@ public class ChannelDetailFragment extends Fragment {
                     public void run() {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "left :(");
+                        deleteOldTypingMessage();
                         message_list.add(message_temp);
+                        generateNewTypingMessage();
                         myAdapter.notifyDataSetChanged();
+                        listView.setSelection(myAdapter.getCount() - 1);
                     }
                 });
             } catch (Exception e) {
@@ -212,7 +261,7 @@ public class ChannelDetailFragment extends Fragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public ChannelDetailFragment() {
-        mSocket = SocketHelper.getSocket();
+
     }
 
     @Override
@@ -220,13 +269,14 @@ public class ChannelDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_NAME)) {
-            Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.detail_toolbar);
-            toolbar.setTitle(getArguments().getCharSequence(ARG_ITEM_NAME));
+            getActivity().setTitle(getArguments().getString(ARG_ITEM_NAME));
         }
 
-        imageLoader = ImageLoader.getInstance(); // Get singleton instance
+        if (getArguments().containsKey(ARG_ITEM_ID)) {
+            mChannel = getArguments().getString(ARG_ITEM_ID);
+        }
 
-
+        mSocket = SocketHelper.getSocket();
     }
 
     @Override
@@ -242,13 +292,15 @@ public class ChannelDetailFragment extends Fragment {
         super.onResume();
 
         listView = (ListView) mRootView.findViewById(R.id.listView);
-        myAdapter = new MessageAdapterItem(getActivity(),0, message_list);
+        myAdapter = new MessageAdapterItem(getActivity(), 0, message_list);
         listView.setAdapter(myAdapter);
+        configurate_Menu();
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
+        mRootView.findViewById(R.id.message_send).setOnLongClickListener(onSendLongClicked);
+
         EditText message_text = (EditText) mRootView.findViewById(R.id.message_text);
         message_text.addTextChangedListener(textWatcher);
-
 
 
         mSocket.on("new message", onNewMessage);
@@ -258,10 +310,15 @@ public class ChannelDetailFragment extends Fragment {
         mSocket.on("user joined", onUserJoined);
         mSocket.on("user left", onUserLeft);
 
+        // connect
         mSocket.connect();
 
+        // authorize the current user to chat
         User user = (User) StorageHelper.getInstance().getObject("user", User.class);
-        mSocket.emit("add user", user.getName());
+        mSocket.emit("add user", user.getToken());
+
+        // join the selected channel
+        mSocket.emit("join", mChannel);
     }
 
     @Override
@@ -269,22 +326,17 @@ public class ChannelDetailFragment extends Fragment {
         super.onPause();
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(null);
-        mSocket.emit("user left");
+
+        // leave the channel
+        mSocket.emit("leave", mChannel);
 
         mSocket.disconnect();
         mSocket.off("new message", onNewMessage);
         mSocket.off("typing", onTyping);
         mSocket.off("stop typing", onStopTyping);
 
-        mSocket.off("user joined", onNewMessage);
-        mSocket.off("user left", onNewMessage);
-    }
-
-    @Override
-    public void onStop() {
-        mSocket.emit("user left");
-        mSocket.disconnect();
-        super.onStop();
+        mSocket.off("user joined", onUserJoined);
+        mSocket.off("user left", onUserLeft);
     }
 
     public class MessageAdapterItem extends ArrayAdapter<Message> {
@@ -305,78 +357,173 @@ public class ChannelDetailFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-
-
-            // inflate the layout
-   /*         if(convertView == null
             LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
-            convertView = inflater.inflate(layoutResourceId, parent, false);
+            Message message = data.get(position);
 
-
-            TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
-            TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
-            TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
-            LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.message_layout);
-            */
-
-            switch (data.get(position).getType())
-            {
+            switch (message.getType()) {
                 case Unknown:
                     break;
 
                 case Chat:
-
-
-                    if (data.get(position).isMyMessage()) {
-
-                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
+                    if (message.isMyMessage()) {
                         convertView = inflater.inflate(R.layout.my_message_view, parent, false);
-
-                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
-                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
-                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
-
-                        text_view.setText(data.get(position).getMessage());
-                        time_view.setText(data.get(position).getTime());
-
-                        if(data.get(position).getThumbnail()!=null)
-                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
-
-                        else
-                            imageView.setImageResource(R.drawable.profilbild);
-
                     } else {
-                        LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
                         convertView = inflater.inflate(R.layout.other_message_view, parent, false);
 
-                        TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
-                        TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
                         TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
-                        ImageView imageView = (ImageView)convertView.findViewById(R.id.message_image_item);
-
-                        text_view.setText(data.get(position).getMessage());
-                        time_view.setText(data.get(position).getTime());
-                        sender_view.setText(data.get(position).getSender());
-
-                        if(data.get(position).getThumbnail()!=null)
-                            imageLoader.displayImage(data.get(position).getThumbnail(),imageView);
-
-                        else
-                            imageView.setImageResource(R.drawable.profilbild);
+                        sender_view.setText(message.getSender().getName());
                     }
+
+                    TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
+                    TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
+                    ImageView imageView = (ImageView) convertView.findViewById(R.id.message_image_item);
+
+                    text_view.setText(message.getMessage());
+                    time_view.setText(message.getTime());
+
+                    if (message.getSender().getThumbnail() != null)
+                        ImageLoader.getInstance().displayImage(message.getSender().getThumbnail(), imageView);
+                    else
+                        imageView.setImageResource(R.drawable.profilbild);
                     break;
 
                 case Info:
-                    LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
                     convertView = inflater.inflate(R.layout.state_view, parent, false);
-                    TextView text_view = (TextView) convertView.findViewById(R.id.state_view);
 
-                    text_view.setText(data.get(position).getSender() + " " + data.get(position).getMessage());
+                    TextView state_view = (TextView) convertView.findViewById(R.id.state_view);
+                    if(message.getSender()!=null)
+                        state_view.setText(message.getSender().getName() + " " + message.getMessage());
+                    else
+                        state_view.setText(message.getMessage());
                     break;
             }
-
+            if (message.getChecked())
+                convertView.setBackgroundColor(Color.argb(50, 0, 0, 0));
+            else
+                convertView.setBackgroundColor(Color.argb(0, 255, 255, 255));
 
             return convertView;
         }
     }
+
+    private void configurate_Menu() {
+
+        final List<Integer> itemPositions = new ArrayList<>();
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position,
+                                                  long id, boolean checked) {
+
+                //Ausgewählte Items werden in Liste aufgenommen und markiert
+                if (checked && message_list.get(position).getType() != Message.Type.Info) {
+                    message_list.get(position).setChecked(true);
+                    for (int i = 0; i <= itemPositions.size(); i++) {
+                        if(i == itemPositions.size())
+                        {
+                            itemPositions.add(position);
+                            break;
+                        }
+
+                        if (itemPositions.get(i) > position) {
+                            itemPositions.add(i,position);
+                            break;
+                        }
+                    }
+                } else {
+                    message_list.get(position).setChecked(false);
+                    itemPositions.remove((Object) position);
+                }
+
+                myAdapter.notifyDataSetChanged();
+                listView.setSelection(myAdapter.getCount() - 1);
+
+
+                // Here you can do something when items are selected/de-selected,
+                // such as update the title in the CAB
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                // Respond to clicks on the actions in the CAB
+                switch (item.getItemId()) {
+                    case R.id.delete:
+                        delete_Messages(itemPositions);
+                        itemPositions.clear();
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
+                    case R.id.copy:
+                        copy_Messages(itemPositions);
+                        int position;
+                        for (int i = 0; i < itemPositions.size(); i++) {
+                            position = itemPositions.get(i);
+                            message_list.get(position).setChecked(false);
+                        }
+                        itemPositions.clear();
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
+
+                    default:
+                        return false;
+                }
+            }
+
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate the menu for the CAB
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.contextual_action_menu, menu);
+                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // Here you can make any necessary updates to the activity when
+                // the CAB is removed. By default, selected items are deselected/unchecked.
+                int position;
+                for (int i = 0; i < itemPositions.size(); i++) {
+                    position = itemPositions.get(i);
+                    message_list.get(position).setChecked(false);
+                }
+                itemPositions.clear();
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // Here you can perform updates to the CAB due to
+                // an invalidate() request
+                return false;
+            }
+        });
+    }
+
+    private void delete_Messages(List<Integer> itemPositions) {
+        int position;
+        for (int i = itemPositions.size() - 1; i >= 0; i--) {
+            position = itemPositions.get(i);
+            message_list.remove(position);
+        }
+        myAdapter.notifyDataSetChanged();
+        listView.setSelection(myAdapter.getCount() - 1);
+    }
+
+    private void copy_Messages(List<Integer> itemPositions) {
+        int position;
+        String text = "";
+        for (int i = 0; i < itemPositions.size(); i++) {
+            position = itemPositions.get(i);
+            text += message_list.get(position).getMessage().toString();
+            if (i < itemPositions.size() - 1)
+                text += " | ";
+        }
+
+        if (!text.isEmpty()) {
+            ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText(text);
+        }
+
+    }
+
 }

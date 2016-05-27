@@ -7,8 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="de.kabelskevalley.doegel.stroke.LogInActivity"
-    android:background="#55bded">
+    tools:context="de.kabelskevalley.doegel.stroke.LoginActivity">
 
     <EditText
         android:layout_width="wrap_content"
@@ -20,7 +19,6 @@
         android:layout_marginTop="27dp"
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:textColor="#000000"
         android:hint="Name"/>
 
     <EditText
@@ -33,7 +31,6 @@
         android:layout_below="@+id/editText_N"
         android:layout_alignLeft="@+id/editText_N"
         android:layout_alignStart="@+id/editText_N"
-        android:textColor="#000000"
         android:hint="Passwort"/>
 
     <TextView
@@ -42,7 +39,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/app_name"
         android:id="@+id/textView"
-        android:textColor="#dfb003"
+        android:textColor="@color/colorAccent"
         android:textStyle="bold|italic"
         android:textSize="70dp"
         android:layout_alignParentTop="true"
@@ -58,8 +55,7 @@
         android:layout_below="@+id/editText_P"
         android:layout_alignLeft="@+id/editText_P"
         android:layout_alignStart="@+id/editText_P"
-        android:textColor="#000000"
-        android:background="#dfb003"
+        android:background="@color/colorAccent"
         android:layout_alignRight="@+id/editText_P"
         android:layout_alignEnd="@+id/editText_P"
         android:onClick="logIn" />
@@ -69,8 +65,7 @@
         android:layout_height="wrap_content"
         android:text="Registrieren"
         android:id="@+id/button_R"
-        android:textColor="#000000"
-        android:background="#dfb003"
+        android:background="@color/colorAccent"
         android:layout_below="@+id/button_L"
         android:layout_alignLeft="@+id/button_L"
         android:layout_alignStart="@+id/button_L"

@@ -56,31 +56,16 @@
             android:layout_marginStart="67dp"
             android:layout_marginBottom="24dp"
             android:layout_alignBottom="@+id/profile_image"
-            android:layout_alignLeft="@+id/th_button"
-            android:layout_alignStart="@+id/th_button" />
-
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/th_editText"
-            android:layout_gravity="center"
-            android:hint="Link für Profilbild"
-            android:gravity="center"
-            android:layout_marginTop="135dp"
-            android:layout_below="@+id/profile_image"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_centerHorizontal="true" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Link bestätigen"
-            android:id="@+id/th_button"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_below="@+id/th_editText"
-            android:layout_centerHorizontal="true" />
+            android:text="Neues Profilbild"
+            android:id="@+id/b_profilPicture"
+            android:layout_below="@+id/profile_image"
+            android:layout_alignLeft="@+id/profile_image"
+            android:layout_alignStart="@+id/profile_image" />
 
     </RelativeLayout>
 

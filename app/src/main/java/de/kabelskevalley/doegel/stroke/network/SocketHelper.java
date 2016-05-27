@@ -1,7 +1,8 @@
 package de.kabelskevalley.doegel.stroke.network;
 
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+import de.kabelskevalley.doegel.stroke.Constants;
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 import java.net.URISyntaxException;
 
@@ -10,8 +11,6 @@ import java.net.URISyntaxException;
  */
 public class SocketHelper {
 
-    final static String URL = "http://chat.kabelskevalley.com:3000/";
-
     private static Socket mSocket;
 
     public static Socket getSocket()
@@ -19,7 +18,7 @@ public class SocketHelper {
         if (mSocket == null)
         {
             try {
-                mSocket = IO.socket(URL);
+                mSocket = IO.socket(Constants.BASE_URL);
             } catch (URISyntaxException e) {
             }
         }
