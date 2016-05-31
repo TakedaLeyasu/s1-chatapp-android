@@ -382,21 +382,21 @@ public class ChannelDetailFragment extends Fragment {
                         sender_view.setText(message.getSender().getName());
 
                         Integer color;
-                        if(!colorMap.containsKey(data.get(position).getSender()))
+                        if(!colorMap.containsKey(data.get(position).getSender().getUsername().toString()))
                         {
                             Random random = new Random();
                             int r = random.nextInt(256);
                             int g = random.nextInt(256);
                             int b = random.nextInt(256);
                             color = Color.rgb(r, g, b);
-                            colorMap.put(data.get(position).getSender().toString(),color);
+                            colorMap.put(data.get(position).getSender().getUsername().toString(),color);
                         }
                         else
-                            color = colorMap.get(data.get(position).getSender().toString());
+                            color = colorMap.get(data.get(position).getSender().getUsername().toString());
 
-                        Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.bubble_other);
+                        Drawable mDrawable = getContext().getDrawable(R.drawable.bubble_other);
                         mDrawable.setColorFilter(new
-                                PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY));
+                                PorterDuffColorFilter(color, PorterDuff.Mode.OVERLAY));
                         RelativeLayout other_message_layout = (RelativeLayout)convertView.findViewById(R.id.other_message_layout);
                         other_message_layout.setBackground(mDrawable);
                     }
