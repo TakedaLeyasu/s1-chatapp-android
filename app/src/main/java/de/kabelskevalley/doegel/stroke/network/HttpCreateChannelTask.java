@@ -19,28 +19,26 @@ public class HttpCreateChannelTask  extends AsyncTask<Void, Void,Channel> {
 
     private OnHttpResultListener<Channel> mListener;
     private Channel mChannel;
-    private String token;
-    private HashMap<String,String> hashMap;
+    private HashMap<String,String> mHashMap;
 
     public HttpCreateChannelTask(OnHttpResultListener<Channel> listener, Channel channel){
         super();
         mChannel = channel;
         mListener = listener;
-        token = ((User) StorageHelper.getInstance().getObject("user",User.class)).getToken();
 
-        hashMap = new HashMap<String,String>();
-        hashMap.put("token",token);
+        String token = ((User) StorageHelper.getInstance().getObject("user",User.class)).getToken();
 
-
+        mHashMap = new HashMap<>();
+        mHashMap.put("token",token);
     }
 
     @Override
     protected Channel doInBackground(Void... params) {
         try {
-            final String url = Constants.BASE_URL + "/api/channels";
+            final String url = Constants.BASE_URL + "/api/channels?token={token}";
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            Channel channel = restTemplate.postForObject(url,mChannel,Channel.class, hashMap);
+            Channel channel = restTemplate.postForObject(url,mChannel,Channel.class, mHashMap);
             return channel;
         } catch (Exception e) {
             mListener.onError(e);
