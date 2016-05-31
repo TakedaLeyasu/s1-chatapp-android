@@ -3,6 +3,9 @@ package de.kabelskevalley.doegel.stroke;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.ClipboardManager;
@@ -21,13 +24,16 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Message;
@@ -55,6 +61,7 @@ public class ChannelDetailFragment extends Fragment {
     private boolean typing = false;
     private MessageAdapterItem myAdapter;
     private ListView listView;
+    private HashMap<String,Integer> colorMap;
 
     /**
      * The root view of the current fragment, we keep a reference to find
@@ -277,6 +284,7 @@ public class ChannelDetailFragment extends Fragment {
         }
 
         mSocket = SocketHelper.getSocket();
+        colorMap = new HashMap<>();
     }
 
     @Override
@@ -372,6 +380,25 @@ public class ChannelDetailFragment extends Fragment {
 
                         TextView sender_view = (TextView) convertView.findViewById(R.id.message_sender_item);
                         sender_view.setText(message.getSender().getName());
+
+                        Integer color;
+                        if(!colorMap.containsKey(data.get(position).getSender()))
+                        {
+                            Random random = new Random();
+                            int r = random.nextInt(256);
+                            int g = random.nextInt(256);
+                            int b = random.nextInt(256);
+                            color = Color.rgb(r, g, b);
+                            colorMap.put(data.get(position).getSender().toString(),color);
+                        }
+                        else
+                            color = colorMap.get(data.get(position).getSender().toString());
+
+                        Drawable mDrawable = getContext().getResources().getDrawable(R.drawable.bubble_other);
+                        mDrawable.setColorFilter(new
+                                PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY));
+                        RelativeLayout other_message_layout = (RelativeLayout)convertView.findViewById(R.id.other_message_layout);
+                        other_message_layout.setBackground(mDrawable);
                     }
 
                     TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);

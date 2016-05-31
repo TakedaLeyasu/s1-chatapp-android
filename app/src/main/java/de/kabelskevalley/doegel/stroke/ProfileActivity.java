@@ -16,7 +16,6 @@ import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -58,17 +57,8 @@ public class ProfileActivity extends AppCompatActivity {
 
 
         TextView textView = (TextView)findViewById(R.id.profile_name);
-        final Button b_picture = (Button)findViewById(R.id.b_profilPicture);
         mImageView = (ImageView)findViewById(R.id.profile_image);
         registerForContextMenu(mImageView);
-        b_picture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerForContextMenu(b_picture);
-                openContextMenu(v);
-            }
-        });
-
 
         textView.setText(user.getName());
 
