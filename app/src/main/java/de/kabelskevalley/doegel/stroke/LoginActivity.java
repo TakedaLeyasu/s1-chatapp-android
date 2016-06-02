@@ -44,9 +44,6 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
            Log.i("  Token ", "null");
         }
         setContentView(R.layout.activity_log_in);
-
-
-
     }
 
     public void logIn(View view)
