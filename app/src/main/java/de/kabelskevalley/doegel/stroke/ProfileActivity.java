@@ -60,7 +60,7 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String name = ((EditText)findViewById(R.id.editText_NewName)).getText().toString() ;
-                if(!name.isEmpty())//Wenn EditText nicht leer ist
+                if(!name.isEmpty())
                 {
                     user.setName(name);
                     new HttpChangeUserDataTask(mUserListener,user).execute();
@@ -117,7 +117,10 @@ public class ProfileActivity extends AppCompatActivity {
             case R.id.internet:
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 String uri = clipboard.getText().toString();
-                changeThumbnail(uri);
+                if(uri.isEmpty() || !(uri.toString().contains(".jpg")^ uri.toString().contains(".png")))
+                     Toast.makeText(getApplicationContext(),"Kopierter Link ist nicht zulässig",Toast.LENGTH_SHORT).show();
+                else
+                    changeThumbnail(uri);
                 return true;
 
             default:

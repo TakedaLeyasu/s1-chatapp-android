@@ -32,7 +32,7 @@ public class CreateChannelActivity extends AppCompatActivity{
             public void onClick(View v) {
                 String name = ((EditText)findViewById(R.id.e_ChannelName)).getText().toString();
                 String thumbnail = ((EditText)findViewById(R.id.e_ChannelThumbnail)).getText().toString();
-                if(thumbnail.isEmpty() || !(thumbnail.toString().contains("jpg")^ thumbnail.toString().contains("png")))
+                if(thumbnail.isEmpty() || !(thumbnail.toString().contains(".jpg")^ thumbnail.toString().contains(".png")))
                     thumbnail=null;
 
                 if(!name.isEmpty()) {

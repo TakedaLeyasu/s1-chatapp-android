@@ -3,10 +3,15 @@ package de.kabelskevalley.doegel.stroke;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.LogInData;
@@ -17,6 +22,7 @@ import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
 
 public class RegistrationActivity extends AppCompatActivity implements OnHttpResultListener<User> {
 
+    private ImageView imageView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +35,9 @@ public class RegistrationActivity extends AppCompatActivity implements OnHttpRes
                 create_profile(v);
             }
         });
+        imageView = (ImageView)findViewById(R.id.imageView_registerPicture);
+        EditText editText = (EditText)findViewById(R.id.editText_thumbnail);
+        editText.addTextChangedListener(textWatcher);
     }
 
     public void create_profile(View view)
@@ -88,6 +97,28 @@ public class RegistrationActivity extends AppCompatActivity implements OnHttpRes
         return  false;
 
     }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            if(s.toString().contains("jpg")||s.toString().contains("png"))
+                ImageLoader.getInstance().displayImage(s.toString(),imageView);
+            else
+            {
+                imageView.setImageResource(R.drawable.channel_picture);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
 
 
 
