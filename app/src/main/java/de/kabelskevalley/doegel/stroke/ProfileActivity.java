@@ -70,7 +70,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     }
 
-    private void change_thumbnail(String uri)
+    private void changeThumbnail(String uri)
     {
         //ImageView imageView = (ImageView)findViewById(R.id.profile_image);
         //ImageLoader.getInstance().displayImage(uri, imageView);
@@ -121,7 +121,7 @@ public class ProfileActivity extends AppCompatActivity {
             case R.id.internet:
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 String uri = clipboard.getText().toString();
-                change_thumbnail(uri);
+                changeThumbnail(uri);
                 return true;
 
             default:
@@ -141,7 +141,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
         if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK) {
             String uri = data.getData().toString();
-            change_thumbnail(uri);
+            changeThumbnail(uri);
         }
     }
 

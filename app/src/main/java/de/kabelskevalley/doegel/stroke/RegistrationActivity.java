@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
-import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
+import de.kabelskevalley.doegel.stroke.entities.LogInData;
 import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.HttpRegistrationTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
@@ -22,8 +22,8 @@ public class RegistrationActivity extends AppCompatActivity implements OnHttpRes
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
 
-        Button registration_button = (Button)findViewById(R.id.registration_button);
-        registration_button.setOnClickListener(new View.OnClickListener() {
+        Button registrationButton = (Button)findViewById(R.id.registration_button);
+        registrationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 create_profile(v);
@@ -39,11 +39,11 @@ public class RegistrationActivity extends AppCompatActivity implements OnHttpRes
         String password2 = ((EditText)findViewById(R.id.editText_p2)).getText().toString();
 
         if(check_registrationData(password1,password2,name)) {
-            LogIn_Data logIn_data;
+            LogInData logIn_data;
             if(thumbnail.isEmpty())
-                logIn_data = new LogIn_Data(name, password1);
+                logIn_data = new LogInData(name, password1);
             else
-                logIn_data = new LogIn_Data(name, password1,thumbnail);
+                logIn_data = new LogInData(name, password1,thumbnail);
 
 
 

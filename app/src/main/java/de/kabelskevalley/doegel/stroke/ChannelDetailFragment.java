@@ -56,7 +56,7 @@ public class ChannelDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    private List<Message> message_list = new ArrayList<>();
+    private List<Message> messageList = new ArrayList<>();
     private List<String> typingPersons = new ArrayList<>();
     private boolean typing = false;
     private MessageAdapterItem myAdapter;
@@ -99,30 +99,30 @@ public class ChannelDetailFragment extends Fragment {
 
     private void deleteOldTypingMessage() {
         try {
-            if (message_list.get((message_list.size() - 1)).getType() == Message.Type.Info
-                    && message_list.get((message_list.size() - 1)).getMessage().contains("schreib"))
-                message_list.remove(message_list.size() - 1);
+            if (messageList.get((messageList.size() - 1)).getType() == Message.Type.Info
+                    && messageList.get((messageList.size() - 1)).getMessage().contains("schreib"))
+                messageList.remove(messageList.size() - 1);
         } catch (Exception e) {
         }
     }
 
     private void generateNewTypingMessage() {
-        Message message_temp;
+        Message messageTemp;
         switch (typingPersons.size()) {
             case 0:
-                message_temp = null;
+                messageTemp = null;
                 break;
 
             case 1:
-                message_temp = new Message(Message.Type.Info, null, typingPersons.get(0) +" schreibt...");
+                messageTemp = new Message(Message.Type.Info, null, typingPersons.get(0) +" schreibt...");
                 break;
 
             default:
-                message_temp = new Message(Message.Type.Info, null, typingPersons.get(0) +" und " + String.valueOf(typingPersons.size() - 1) + " weitere Personen schreiben...");
+                messageTemp = new Message(Message.Type.Info, null, typingPersons.get(0) +" und " + String.valueOf(typingPersons.size() - 1) + " weitere Personen schreiben...");
                 break;
         }
-        if (message_temp != null)
-            message_list.add(message_temp);
+        if (messageTemp != null)
+            messageList.add(messageTemp);
     }
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -136,14 +136,14 @@ public class ChannelDetailFragment extends Fragment {
 
         @Override
         public void afterTextChanged(Editable s) {
-            EditText message_text = ((EditText) mRootView.findViewById(R.id.message_text));
+            EditText messageText = ((EditText) mRootView.findViewById(R.id.message_text));
             if (typing) {
-                if (message_text.getText().toString().equals("")) {
+                if (messageText.getText().toString().equals("")) {
                     mSocket.emit("stop typing");
                     typing = false;
                 }
             } else {
-                if (!message_text.getText().toString().equals("")) {
+                if (!messageText.getText().toString().equals("")) {
                     mSocket.emit("typing");
                     typing = true;
                 }
@@ -161,7 +161,7 @@ public class ChannelDetailFragment extends Fragment {
                     Message message = ChannelDetailFragment.this.parseMessage(args[0].toString());
 
                     deleteOldTypingMessage();
-                    message_list.add(message);
+                    messageList.add(message);
                     myAdapter.notifyDataSetChanged();
                     listView.setSelection(myAdapter.getCount() - 1);
                 }
@@ -217,7 +217,7 @@ public class ChannelDetailFragment extends Fragment {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "joined :)");
                         deleteOldTypingMessage();
-                        message_list.add(message_temp);
+                        messageList.add(message_temp);
                         generateNewTypingMessage();
                         myAdapter.notifyDataSetChanged();
                         listView.setSelection(myAdapter.getCount() - 1);
@@ -238,7 +238,7 @@ public class ChannelDetailFragment extends Fragment {
                         Message info = ChannelDetailFragment.this.parseMessage(args[0].toString());
                         Message message_temp = new Message(Message.Type.Info, info.getSender(), "left :(");
                         deleteOldTypingMessage();
-                        message_list.add(message_temp);
+                        messageList.add(message_temp);
                         generateNewTypingMessage();
                         myAdapter.notifyDataSetChanged();
                         listView.setSelection(myAdapter.getCount() - 1);
@@ -300,9 +300,9 @@ public class ChannelDetailFragment extends Fragment {
         super.onResume();
 
         listView = (ListView) mRootView.findViewById(R.id.listView);
-        myAdapter = new MessageAdapterItem(getActivity(), 0, message_list);
+        myAdapter = new MessageAdapterItem(getActivity(), 0, messageList);
         listView.setAdapter(myAdapter);
-        configurate_Menu();
+        configurateMenu();
 
         mRootView.findViewById(R.id.message_send).setOnClickListener(onSendClicked);
         mRootView.findViewById(R.id.message_send).setOnLongClickListener(onSendLongClicked);
@@ -433,7 +433,7 @@ public class ChannelDetailFragment extends Fragment {
         }
     }
 
-    private void configurate_Menu() {
+    private void configurateMenu() {
 
         final List<Integer> itemPositions = new ArrayList<>();
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -444,8 +444,8 @@ public class ChannelDetailFragment extends Fragment {
                                                   long id, boolean checked) {
 
                 //Ausgewählte Items werden in Liste aufgenommen und markiert
-                if (checked && message_list.get(position).getType() != Message.Type.Info) {
-                    message_list.get(position).setChecked(true);
+                if (checked && messageList.get(position).getType() != Message.Type.Info) {
+                    messageList.get(position).setChecked(true);
                     for (int i = 0; i <= itemPositions.size(); i++) {
                         if(i == itemPositions.size())
                         {
@@ -459,7 +459,7 @@ public class ChannelDetailFragment extends Fragment {
                         }
                     }
                 } else {
-                    message_list.get(position).setChecked(false);
+                    messageList.get(position).setChecked(false);
                     itemPositions.remove((Object) position);
                 }
 
@@ -476,7 +476,7 @@ public class ChannelDetailFragment extends Fragment {
                 // Respond to clicks on the actions in the CAB
                 switch (item.getItemId()) {
                     case R.id.delete:
-                        delete_Messages(itemPositions);
+                        deleteMessages(itemPositions);
                         itemPositions.clear();
                         mode.finish(); // Action picked, so close the CAB
                         return true;
@@ -485,7 +485,7 @@ public class ChannelDetailFragment extends Fragment {
                         int position;
                         for (int i = 0; i < itemPositions.size(); i++) {
                             position = itemPositions.get(i);
-                            message_list.get(position).setChecked(false);
+                            messageList.get(position).setChecked(false);
                         }
                         itemPositions.clear();
                         mode.finish(); // Action picked, so close the CAB
@@ -512,7 +512,7 @@ public class ChannelDetailFragment extends Fragment {
                 int position;
                 for (int i = 0; i < itemPositions.size(); i++) {
                     position = itemPositions.get(i);
-                    message_list.get(position).setChecked(false);
+                    messageList.get(position).setChecked(false);
                 }
                 itemPositions.clear();
             }
@@ -526,11 +526,11 @@ public class ChannelDetailFragment extends Fragment {
         });
     }
 
-    private void delete_Messages(List<Integer> itemPositions) {
+    private void deleteMessages(List<Integer> itemPositions) {
         int position;
         for (int i = itemPositions.size() - 1; i >= 0; i--) {
             position = itemPositions.get(i);
-            message_list.remove(position);
+            messageList.remove(position);
         }
         myAdapter.notifyDataSetChanged();
         listView.setSelection(myAdapter.getCount() - 1);
@@ -541,7 +541,7 @@ public class ChannelDetailFragment extends Fragment {
         String text = "";
         for (int i = 0; i < itemPositions.size(); i++) {
             position = itemPositions.get(i);
-            text += message_list.get(position).getMessage().toString();
+            text += messageList.get(position).getMessage().toString();
             if (i < itemPositions.size() - 1)
                 text += " | ";
         }
