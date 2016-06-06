@@ -267,22 +267,17 @@ public class ChannelDetailFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ChannelDetailFragment() {
-
-    }
+    public ChannelDetailFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (getArguments().containsKey(ARG_ITEM_NAME)) {
             getActivity().setTitle(getArguments().getString(ARG_ITEM_NAME));
         }
-
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mChannel = getArguments().getString(ARG_ITEM_ID);
         }
-
         mSocket = SocketHelper.getSocket();
         colorMap = new HashMap<>();
     }
@@ -291,7 +286,6 @@ public class ChannelDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.channel_detail, container, false);
-
         return mRootView;
     }
 

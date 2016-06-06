@@ -35,7 +35,8 @@
             android:id="@+id/frameLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:weightSum="1">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -52,12 +53,12 @@
                 android:src="@drawable/profilbild"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:id="@+id/profile_name"
                 android:textSize="30dp"
-                 />
+                android:layout_gravity="center_vertical" />
 
         </LinearLayout>
 
@@ -71,23 +72,6 @@
             android:layout_marginTop="41dp"
             android:hint="Neuer Name"/>
 
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:ems="11"
-            android:id="@+id/editText_p1"
-            android:hint="Neues Passwort"/>
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:ems="11"
-            android:id="@+id/editText_p2"
-            android:hint="Passwort wiederholen"/>
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,7 +79,7 @@
             android:id="@+id/b_changeProfile"
             android:layout_marginBottom="39dp"
             android:background="@color/colorAccent"
-             />
+            android:layout_gravity="center_horizontal" />
 
     </LinearLayout>
 

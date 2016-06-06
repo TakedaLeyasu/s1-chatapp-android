@@ -4,11 +4,13 @@
 
     <item
         android:id="@+id/delete"
-        android:title="Löschen" />
+        android:title="Löschen"
+        />
 
     <item
         android:id="@+id/copy"
-        android:title="Kopieren" />
+        android:title="Kopieren"
+        />
 
 
 </menu>
