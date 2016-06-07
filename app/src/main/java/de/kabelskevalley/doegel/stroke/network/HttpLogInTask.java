@@ -6,34 +6,34 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import de.kabelskevalley.doegel.stroke.Constants;
-import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
+import de.kabelskevalley.doegel.stroke.entities.LogInData;
 import de.kabelskevalley.doegel.stroke.entities.User;
 
 /**
  * Created by livestream on 12.04.2016.
  */
-public class HttpLogInTask extends AsyncTask<LogIn_Data, LogIn_Data, User> {
+public class HttpLogInTask extends AsyncTask<LogInData, LogInData, User> {
 
     private OnHttpResultListener<User> mListener;
-    private LogIn_Data logIn_data;
+    private LogInData logInData;
 
-    public HttpLogInTask(OnHttpResultListener<User> listener, LogIn_Data logIn_data){
+    public HttpLogInTask(OnHttpResultListener<User> listener, LogInData logIn_data){
         super();
-        this.logIn_data = logIn_data;
+        this.logInData = logIn_data;
         mListener = listener;
     }
 
     @Override
-    protected User doInBackground(LogIn_Data... params) {
+    protected User doInBackground(LogInData... params) {
         try {
-            String url = logIn_data.hasToken()
+            String url = logInData.hasToken()
                     ? Constants.BASE_URL + "/api/auth" // check auth token
                     : Constants.BASE_URL + "/api/login"; // do a full login
 
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 
-            return restTemplate.postForObject(url, logIn_data, User.class);
+            return restTemplate.postForObject(url, logInData, User.class);
         } catch (Exception e) {
             mListener.onError(e);
         }

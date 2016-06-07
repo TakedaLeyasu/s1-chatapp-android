@@ -13,7 +13,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
-import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
+import de.kabelskevalley.doegel.stroke.entities.LogInData;
 import de.kabelskevalley.doegel.stroke.entities.User;
 import de.kabelskevalley.doegel.stroke.network.HttpLogInTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
        if(user!=null)
         {
             Log.i("  Token ", user.getToken());
-            new HttpLogInTask(this, new LogIn_Data(user.getToken())).execute();
+            new HttpLogInTask(this, new LogInData(user.getToken())).execute();
         }
         else {
            Log.i("  Token ", "null");
@@ -53,7 +53,7 @@ public class LoginActivity extends AppCompatActivity implements OnHttpResultList
 
         name = name.replaceAll(" ","");
 
-        LogIn_Data logIn_data = new LogIn_Data(name, password);
+        LogInData logIn_data = new LogInData(name, password);
         new HttpLogInTask(this,logIn_data).execute();
     }
 

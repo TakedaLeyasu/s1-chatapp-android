@@ -3,21 +3,21 @@ package de.kabelskevalley.doegel.stroke.entities;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(value={"_id", "__v"})
-public class LogIn_Data {
+public class LogInData {
     private String username;
     private String password;
     private String name;
     private String token;
     private String thumbnail;
 
-    public LogIn_Data(String username, String password)
+    public LogInData(String username, String password)
     {
         this.username = username;
         this.password = password;
         this.name = username;
         this.thumbnail = null;
     }
-    public LogIn_Data(String username, String password,String thumbnail)
+    public LogInData(String username, String password, String thumbnail)
     {
         this.username = username;
         this.password = password;
@@ -25,7 +25,7 @@ public class LogIn_Data {
         this.thumbnail = thumbnail;
     }
 
-    public LogIn_Data(String token)
+    public LogInData(String token)
     {
         this.token = token;
     }
