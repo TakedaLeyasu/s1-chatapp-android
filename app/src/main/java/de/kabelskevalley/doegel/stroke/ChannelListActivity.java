@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
@@ -44,13 +45,19 @@ public class ChannelListActivity extends AppCompatActivity{
      * device.
      */
     private boolean mTwoPane;
+    private boolean mFavourites;
+    private List<Channel> favouritesList;
 
     private RecyclerView mRecyclerView;
 
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
         public void onResult(List<Channel> channels) {
-            mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(channels));
+
+            if(!mFavourites)
+                mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(favouritesList));
+            else
+                mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(channels));
 
             SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
             if (swr != null) {
@@ -107,6 +114,9 @@ public class ChannelListActivity extends AppCompatActivity{
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+        favouritesList =(List<Channel>) StorageHelper.getInstance().getObject("favourites",List.class);
+        if(favouritesList == null)
+            favouritesList = new ArrayList<>();
     }
 
     @Override
@@ -148,6 +158,14 @@ public class ChannelListActivity extends AppCompatActivity{
             Intent intent = new Intent(getApplicationContext(),ProfileActivity.class);
             startActivity(intent);
             return true;
+        }
+        if(item.getItemId() == R.id.change)
+        {
+            if(mFavourites)
+                mFavourites = false;
+            else
+                mFavourites = true;
+            new HttpChannelTask(mChannelListener).execute();
         }
         return super.onOptionsItemSelected(item);
     }
