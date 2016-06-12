@@ -2,17 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/favo"
+        android:title="Favorisieren"
+        />
+
+    <item
+        android:id="@+id/show_id"
+        android:title="ID anzeigen"
+        />
+    <item
         android:id="@+id/delete"
         android:title="Löschen"
         />
 
-    <item
-        android:id="@+id/edit"
-        android:title="Bearbeiten"
-        />
-    <item
-        android:id="@+id/favo"
-        android:title="Favorisieren"
-        />
+
 
 </menu>

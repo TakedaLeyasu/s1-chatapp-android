@@ -16,9 +16,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -28,6 +28,7 @@ import java.util.List;
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.Channel;
 import de.kabelskevalley.doegel.stroke.network.HttpChannelTask;
+import de.kabelskevalley.doegel.stroke.network.HttpDeleteChannelTask;
 import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
 
 /**
@@ -38,7 +39,7 @@ import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class ChannelListActivity extends AppCompatActivity{
+public class ChannelListActivity extends AppCompatActivity {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -46,25 +47,27 @@ public class ChannelListActivity extends AppCompatActivity{
      */
     private boolean mTwoPane;
     private boolean mFavourites;
-    private List<Channel> favouritesList;
+    private List<Channel> mChannelList;
+    private List<Channel> mFavouritesList;
 
     private RecyclerView mRecyclerView;
+    private ChannelsRecyclerViewAdapter mAdapter;
 
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
         public void onResult(List<Channel> channels) {
-
-            if(!mFavourites)
-                mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(favouritesList));
+            mChannelList = channels;
+            if (mFavourites)
+                mAdapter = new  ChannelsRecyclerViewAdapter(mFavouritesList);
             else
-                mRecyclerView.setAdapter(new ChannelsRecyclerViewAdapter(channels));
+                mAdapter = new  ChannelsRecyclerViewAdapter(channels);
+            mRecyclerView.setAdapter(mAdapter);
 
             SwipeRefreshLayout swr = (SwipeRefreshLayout) findViewById(R.id.refresh_layout);
             if (swr != null) {
                 swr.setRefreshing(false);
             }
         }
-
         @Override
         public void onError(Exception e) {
             Log.e("MainActivity", e.getMessage(), e);
@@ -75,7 +78,6 @@ public class ChannelListActivity extends AppCompatActivity{
             }
         }
     };
-
 
 
     @Override
@@ -106,6 +108,8 @@ public class ChannelListActivity extends AppCompatActivity{
 
         mRecyclerView = (RecyclerView) findViewById(R.id.channel_list);
         assert mRecyclerView != null;
+        registerForContextMenu(mRecyclerView);
+        mAdapter = new ChannelsRecyclerViewAdapter(mChannelList);
 
         if (findViewById(R.id.channel_detail_container) != null) {
             // The detail container view will be present only in the
@@ -114,58 +118,51 @@ public class ChannelListActivity extends AppCompatActivity{
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-        favouritesList =(List<Channel>) StorageHelper.getInstance().getObject("favourites",List.class);
-        if(favouritesList == null)
-            favouritesList = new ArrayList<>();
+
+
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-
         return true;
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo)
-    {
-        super.onCreateContextMenu(menu,v,menuInfo);
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.contextual_channel_menu,menu);
+        inflater.inflate(R.menu.contextual_channel_menu, menu);
     }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        return true;
-        }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() == R.id.logOut)
-        {
-            StorageHelper.getInstance().clear("user");
-            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
-            startActivity(intent);
-            return true;
-        }
+        switch (item.getItemId()) {
+            case R.id.logOut:
+                StorageHelper.getInstance().clear("user");
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
+                return true;
 
-        if(item.getItemId() == R.id.profile)
-        {
-            Intent intent = new Intent(getApplicationContext(),ProfileActivity.class);
-            startActivity(intent);
-            return true;
-        }
-        if(item.getItemId() == R.id.change)
-        {
-            if(mFavourites)
-                mFavourites = false;
-            else
-                mFavourites = true;
-            new HttpChannelTask(mChannelListener).execute();
+            case R.id.profile:
+                intent = new Intent(getApplicationContext(), ProfileActivity.class);
+                startActivity(intent);
+                return true;
+
+            case R.id.change:
+                Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+                if (mFavourites) {
+                    mFavourites = false;
+                    toolbar.setTitle("Stroke!");
+                } else {
+                    mFavourites = true;
+                    toolbar.setTitle("Stroke!   -   Favoriten");
+                }
+                StorageHelper.getInstance().storeObject("mFavourites",mFavourites);
+                new HttpChannelTask(mChannelListener).execute();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -173,13 +170,71 @@ public class ChannelListActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        try {mFavourites = (Boolean) StorageHelper.getInstance().getObject("mFavourites", Boolean.class);}
+        catch (Exception e ){mFavourites = false;}
+        if(mFavourites)
+        {
+            Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+            toolbar.setTitle("Stroke!   -   Favoriten");
+        }
+        //TODO
+        /*
+        mFavouritesList = (List<Channel>) StorageHelper.getInstance().getObject("favourites", ArrayList.class);
+        if (mFavouritesList == null)
+            mFavouritesList = new ArrayList<>();
+        */
+        mFavouritesList = new ArrayList<>();
         new HttpChannelTask(mChannelListener).execute();
+
     }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete:
+                if (mFavourites) {
+                    new HttpDeleteChannelTask(mChannelListener,mFavouritesList.get(mAdapter.getPosition()),mChannelList).execute();
+                    mFavouritesList.remove(mAdapter.getPosition());
+                } else {
+                    new HttpDeleteChannelTask(mChannelListener,mChannelList.get(mAdapter.getPosition()),mChannelList).execute();
+                    if(mFavouritesList.contains(mChannelList.get(mAdapter.getPosition())))
+                        mFavouritesList.remove(mAdapter.getPosition());
+                }
+                return true;
+
+            case R.id.show_id:
+                if (mFavourites) {
+                    Toast.makeText(getApplicationContext(),mFavouritesList.get(mAdapter.getPosition()).getId(),Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),mChannelList.get(mAdapter.getPosition()).getId(),Toast.LENGTH_LONG).show();
+                }
+                return true;
+
+            case R.id.favo:
+                if (mFavourites) {
+                    mFavouritesList.remove(mAdapter.getPosition());
+                    Toast.makeText(getApplicationContext(), "Kanal von Favoriten gelöscht", Toast.LENGTH_SHORT).show();
+                    new HttpChannelTask(mChannelListener).execute();
+                } else {
+                    Channel channel = mChannelList.get(mAdapter.getPosition());
+                    mFavouritesList.add(channel);
+                    Toast.makeText(getApplicationContext(), "Kanal zu Favoriten hinzugefügt", Toast.LENGTH_SHORT).show();
+                }
+                StorageHelper.getInstance().storeObject("favourites",mFavouritesList);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
 
     public class ChannelsRecyclerViewAdapter
             extends RecyclerView.Adapter<ChannelsRecyclerViewAdapter.ViewHolder> {
 
         private final List<Channel> mValues;
+        private int position;
+        public int getPosition() {return position;}
+        private void setPosition(int position) { this.position = position;}
 
         public ChannelsRecyclerViewAdapter(List<Channel> items) {
             mValues = items;
@@ -193,16 +248,13 @@ public class ChannelListActivity extends AppCompatActivity{
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
+        public void onBindViewHolder(final ViewHolder holder, final int position) {
             holder.mItem = mValues.get(position);
             holder.mContentView.setText(mValues.get(position).getName());
 
-            if(mValues.get(position).getThumbnail()!=null)
-            {
+            if (mValues.get(position).getThumbnail() != null) {
                 ImageLoader.getInstance().displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
-            }
-            else
-            {
+            } else {
                 holder.mImageView.setImageResource(R.drawable.channel_picture);
             }
 
@@ -230,7 +282,13 @@ public class ChannelListActivity extends AppCompatActivity{
                 }
             });
 
-            registerForContextMenu(holder.mView);
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    setPosition(position);
+                    return false;
+                }
+            });
         }
 
         @Override
@@ -249,6 +307,7 @@ public class ChannelListActivity extends AppCompatActivity{
                 mView = view;
                 mContentView = (TextView) view.findViewById(R.id.content);
                 mImageView = (ImageView) view.findViewById(R.id.channel_picture);
+
             }
 
             @Override

@@ -419,7 +419,7 @@ public class ChannelDetailFragment extends Fragment {
                     break;
             }
             if (message.getChecked())
-                convertView.setBackgroundColor(Color.argb(50, 0, 0, 0));
+                convertView.setBackgroundColor(Color.argb(100, 200, 60, 60));
             else
                 convertView.setBackgroundColor(Color.argb(0, 255, 255, 255));
 

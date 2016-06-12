@@ -104,7 +104,7 @@ public class ProfileActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.sd_card:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
+                photoPickerIntent.setType("imageView/*");
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 return true;
 
