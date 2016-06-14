@@ -24,50 +24,64 @@
     </android.support.design.widget.AppBarLayout>
 
 
-    <RelativeLayout
-        android:id="@+id/frameLayout"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
 
-        <ImageView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/profile_image"
-            android:layout_gravity="left|top"
-            android:layout_marginTop="60dp"
-            android:maxHeight="100dp"
-            android:maxWidth="100dp"
-            android:minHeight="100dp"
-            android:minWidth="100dp"
-            android:nestedScrollingEnabled="false"
-            android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@+id/profile_name"
-            android:layout_toStartOf="@+id/profile_name"
-            android:src="@drawable/profilbild"/>
+            android:orientation="horizontal"
+            android:weightSum="1">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/profile_image"
+                android:layout_gravity="left|top"
+                android:layout_marginTop="60dp"
+                android:maxHeight="100dp"
+                android:maxWidth="100dp"
+                android:minHeight="100dp"
+                android:minWidth="100dp"
+                android:nestedScrollingEnabled="false"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/profilbild"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/profile_name"
+                android:textSize="30dp"
+                android:layout_gravity="center_vertical" />
+
+        </LinearLayout>
+
+
+        <EditText
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/profile_name"
-            android:layout_gravity="center_horizontal|top"
-            android:layout_marginLeft="67dp"
-            android:layout_marginStart="67dp"
-            android:layout_marginBottom="24dp"
-            android:layout_alignBottom="@+id/profile_image"
-            android:layout_centerHorizontal="true" />
+            android:inputType="textPersonName"
+            android:ems="11"
+            android:id="@+id/editText_NewName"
+            android:layout_marginTop="41dp"
+            android:hint="Neuer Name"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Neues Profilbild"
-            android:id="@+id/b_profilPicture"
-            android:layout_below="@+id/profile_image"
-            android:layout_alignLeft="@+id/profile_image"
-            android:layout_alignStart="@+id/profile_image" />
+            android:text="Namen Ändern"
+            android:id="@+id/b_changeProfile"
+            android:layout_marginBottom="39dp"
+            android:background="@color/colorAccent"
+            android:layout_gravity="center_horizontal" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>

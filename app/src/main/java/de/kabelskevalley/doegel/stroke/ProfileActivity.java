@@ -3,9 +3,7 @@ package de.kabelskevalley.doegel.stroke;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,18 +15,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
 import de.kabelskevalley.doegel.stroke.entities.User;
+import de.kabelskevalley.doegel.stroke.network.HttpChangeUserDataTask;
+import de.kabelskevalley.doegel.stroke.network.OnHttpResultListener;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -40,52 +37,42 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-
-        StorageHelper.Init(this, "stroke");
         user =(User) StorageHelper.getInstance().getObject("user", User.class);
-
+        setContentView(R.layout.activity_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Profil");
-        toolbar.setSubtitle(user.getName());
+        toolbar.setSubtitle(user.getUsername());
         setSupportActionBar(toolbar);
-
+        TextView textView = (TextView)findViewById(R.id.profile_name);
+        mImageView = (ImageView)findViewById(R.id.profile_image);
+        registerForContextMenu(mImageView);
+        textView.setText(user.getName());
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
-
-
-        TextView textView = (TextView)findViewById(R.id.profile_name);
-        final Button b_picture = (Button)findViewById(R.id.b_profilPicture);
-        mImageView = (ImageView)findViewById(R.id.profile_image);
-        registerForContextMenu(mImageView);
-        b_picture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerForContextMenu(b_picture);
-                openContextMenu(v);
-            }
-        });
-
-
-        textView.setText(user.getName());
-
         if(user.getThumbnail()!=null)
         {
             ImageLoader.getInstance().displayImage(user.getThumbnail(), mImageView);
         }
-
-
+        Button button = (Button)findViewById(R.id.b_changeProfile);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = ((EditText)findViewById(R.id.editText_NewName)).getText().toString() ;
+                if(!name.isEmpty())
+                {
+                    user.setName(name);
+                    new HttpChangeUserDataTask(mUserListener,user).execute();
+                }
+            }
+        });
     }
 
-    private void change_thumbnail(String uri)
+    private void changeThumbnail(String uri)
     {
-        //ImageView imageView = (ImageView)findViewById(R.id.profile_image);
-        //ImageLoader.getInstance().displayImage(uri, imageView);
-        //TODO user.setThumbnail(uri);
-        //StorageHelper.getInstance().storeObject("user", user);
+        user.setThumbnail(uri);
+        new HttpChangeUserDataTask(mUserListener,user).execute();
     }
 
     @Override
@@ -117,12 +104,11 @@ public class ProfileActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.sd_card:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
+                photoPickerIntent.setType("imageView/*");
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 return true;
 
             case R.id.camera:
-                dispatchTakePictureIntent();
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null)
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
@@ -131,7 +117,10 @@ public class ProfileActivity extends AppCompatActivity {
             case R.id.internet:
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 String uri = clipboard.getText().toString();
-                change_thumbnail(uri);
+                if(uri.isEmpty() || !(uri.toString().contains(".jpg")^ uri.toString().contains(".png")))
+                     Toast.makeText(getApplicationContext(),"Kopierter Link ist nicht zulässig. Es funktionieren nur .png und .jpg Dateien",Toast.LENGTH_SHORT).show();
+                else
+                    changeThumbnail(uri);
                 return true;
 
             default:
@@ -145,63 +134,31 @@ public class ProfileActivity extends AppCompatActivity {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             mImageView.setImageBitmap(imageBitmap);
-            /*StorageHelper.getInstance().storeObject("pictue", imageBitmap);
-            user.setThumbnail("Camera");
-            StorageHelper.getInstance().storeObject("user", user);*/
         }
         if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK) {
             String uri = data.getData().toString();
-            change_thumbnail(uri);
+            changeThumbnail(uri);
         }
     }
 
-
-    String mCurrentPhotoPath;
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        return image;
-    }
-
-    private void dispatchTakePictureIntent() {
-        Log.i("dd","wdwd");
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-                Log.e("dd", "wdwd");
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                Log.i("dd", "wdwd");
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                //user.setThumbnail(Uri.fromFile(photoFile).toString());
-
-                StorageHelper.getInstance().storeObject("user", user);
-
-            }
+    private OnHttpResultListener mUserListener = new OnHttpResultListener<User>() {
+        @Override
+        public void onResult(User temp) {
+            StorageHelper.getInstance().storeObject("user",user);
+            ImageView imageView = (ImageView)findViewById(R.id.profile_image);
+            ImageLoader.getInstance().displayImage(user.getThumbnail(), imageView);
+            TextView textView = (TextView)findViewById(R.id.profile_name);
+            textView.setText(user.getName());
         }
-    }
+
+        @Override
+        public void onError(Exception e) {
+            Log.e("MainActivity", e.getMessage(), e);
+            Toast.makeText(getApplicationContext(),"Daten konnten nicht geändert werden",Toast.LENGTH_SHORT).show();
+        }
+    };
+
+
 
 
 }

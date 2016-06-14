@@ -5,45 +5,47 @@ import android.os.AsyncTask;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+
 import de.kabelskevalley.doegel.stroke.Constants;
-import de.kabelskevalley.doegel.stroke.entities.LogInData;
 import de.kabelskevalley.doegel.stroke.entities.User;
 
 /**
- * Created by livestream on 12.04.2016.
+ * Created by Hartmut on 06.06.2016.
  */
-public class HttpLogInTask extends AsyncTask<LogInData, LogInData, User> {
+public class HttpChangeUserDataTask extends AsyncTask<User, User, User> {
 
     private OnHttpResultListener<User> mListener;
-    private LogInData logInData;
+    private User user;
+    private HashMap<String,String> mHashMap;
 
-    public HttpLogInTask(OnHttpResultListener<User> listener, LogInData logIn_data){
+    public HttpChangeUserDataTask(OnHttpResultListener<User> listener, User user){
         super();
-        this.logInData = logIn_data;
+        this.user = user;
         mListener = listener;
+
+        String token = user.getToken();
+        mHashMap = new HashMap<>();
+        mHashMap.put("token",token);
     }
 
     @Override
-    protected User doInBackground(LogInData... params) {
+    protected User doInBackground(User... params) {
         try {
-            String url = logInData.hasToken()
-                    ? Constants.BASE_URL + "/api/auth" // check auth token
-                    : Constants.BASE_URL + "/api/login"; // do a full login
-
+            final String url = Constants.BASE_URL + "/api/profile?token={token}";
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            return restTemplate.postForObject(url, logInData, User.class);
-        } catch (Exception e) {
-            mListener.onError(e);
+            user = restTemplate.postForObject(url, user, User.class, mHashMap);
+            return user;
         }
-
+        catch (Exception e) {
+            mListener.onError(e);
+    }
         return null;
     }
 
     @Override
     protected void onPostExecute(User user) {
-        if (user != null)
             mListener.onResult(user);
     }
 

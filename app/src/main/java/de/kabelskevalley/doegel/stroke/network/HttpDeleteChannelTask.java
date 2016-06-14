@@ -5,7 +5,9 @@ import android.os.AsyncTask;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 
 import de.kabelskevalley.doegel.stroke.Constants;
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
@@ -13,32 +15,32 @@ import de.kabelskevalley.doegel.stroke.entities.Channel;
 import de.kabelskevalley.doegel.stroke.entities.User;
 
 /**
- * Created by Hartmut on 24.05.2016.
+ * Created by Hartmut on 12.06.2016.
  */
-public class HttpCreateChannelTask  extends AsyncTask<Void, Void,Channel> {
+public class HttpDeleteChannelTask extends AsyncTask<Void, Void, Void> {
 
-    private OnHttpResultListener<Channel> mListener;
-    private Channel mChannel;
-    private HashMap<String,String> mHashMap;
+    private OnHttpResultListener<Boolean> mListener;
+    private HashMap<String, String> mHashMap;
+    Channel mChannel;
 
-    public HttpCreateChannelTask(OnHttpResultListener<Channel> listener, Channel channel){
+    public HttpDeleteChannelTask(OnHttpResultListener<Boolean> listener,Channel channel){
         super();
-        mChannel = channel;
         mListener = listener;
-
         String token = ((User) StorageHelper.getInstance().getObject("user",User.class)).getToken();
         mHashMap = new HashMap<>();
-        mHashMap.put("token",token);
+        mHashMap.put("token", token);
+        mHashMap.put("id", URLEncoder.encode(channel.getId()));
+
+        this.mChannel = channel;
     }
 
     @Override
-    protected Channel doInBackground(Void... params) {
+    protected Void doInBackground(Void... params) {
         try {
-            final String url = Constants.BASE_URL + "/api/channels?token={token}";
+            final String url = Constants.BASE_URL + "/api/channels/{id}?token={token}";
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            Channel channel = restTemplate.postForObject(url,mChannel,Channel.class, mHashMap);
-            return channel;
+            restTemplate.delete(url,mHashMap);
         } catch (Exception e) {
             mListener.onError(e);
         }
@@ -47,8 +49,8 @@ public class HttpCreateChannelTask  extends AsyncTask<Void, Void,Channel> {
     }
 
     @Override
-    protected void onPostExecute(Channel channel) {
-        mListener.onResult(channel);
+    protected void onPostExecute(Void result)
+    {
+        mListener.onResult(true);
     }
-
 }
