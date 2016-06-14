@@ -13,13 +13,4 @@ public class User {
     public String getUsername(){return username;}
     public String getToken(){return token;}
     public String getThumbnail(){return thumbnail;}
-
-    public void setThumbnail(String uri){this.thumbnail = uri;}
-    public void setName(String name){this.name = name;}
-
-
-    public boolean hasToken()
-    {
-        return token != null;
-    }
 }

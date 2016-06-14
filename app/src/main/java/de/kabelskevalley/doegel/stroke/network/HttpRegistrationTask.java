@@ -6,25 +6,25 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import de.kabelskevalley.doegel.stroke.Constants;
-import de.kabelskevalley.doegel.stroke.entities.LogInData;
+import de.kabelskevalley.doegel.stroke.entities.LogIn_Data;
 import de.kabelskevalley.doegel.stroke.entities.User;
 
 /**
  * Created by Hartmut on 26.04.2016.
  */
-public class HttpRegistrationTask extends AsyncTask<LogInData, LogInData, User> {
+public class HttpRegistrationTask extends AsyncTask<LogIn_Data, LogIn_Data, User> {
 
     private OnHttpResultListener<User> mListener;
-    private LogInData registration_Data;
+    private LogIn_Data registration_Data;
 
-    public HttpRegistrationTask(OnHttpResultListener<User> listener, LogInData logIn_data){
+    public HttpRegistrationTask(OnHttpResultListener<User> listener, LogIn_Data logIn_data){
         super();
         this.registration_Data = logIn_data;
         mListener = listener;
     }
 
     @Override
-    protected User doInBackground(LogInData... params) {
+    protected User doInBackground(LogIn_Data... params) {
         try {
             final String url = Constants.BASE_URL + "/api/register";
             RestTemplate restTemplate = new RestTemplate();

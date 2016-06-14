@@ -27,6 +27,7 @@ public class HttpCreateChannelTask  extends AsyncTask<Void, Void,Channel> {
         mListener = listener;
 
         String token = ((User) StorageHelper.getInstance().getObject("user",User.class)).getToken();
+
         mHashMap = new HashMap<>();
         mHashMap.put("token",token);
     }
