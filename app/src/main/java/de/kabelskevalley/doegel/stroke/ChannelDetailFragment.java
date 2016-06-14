@@ -369,6 +369,14 @@ public class ChannelDetailFragment extends Fragment {
                 case Chat:
                     if (message.isMyMessage()) {
                         convertView = inflater.inflate(R.layout.my_message_view, parent, false);
+                        if(message.getChecked()) {
+                            int color = Color.RED;
+                            Drawable mDrawable = getContext().getDrawable(R.drawable.bubble_own);
+                            mDrawable.setColorFilter(new
+                                    PorterDuffColorFilter(color, PorterDuff.Mode.OVERLAY));
+                            RelativeLayout my_message_layout = (RelativeLayout) convertView.findViewById(R.id.my_message_layout);
+                            my_message_layout.setBackground(mDrawable);
+                        }
                     } else {
                         convertView = inflater.inflate(R.layout.other_message_view, parent, false);
 
@@ -376,18 +384,25 @@ public class ChannelDetailFragment extends Fragment {
                         sender_view.setText(message.getSender().getName());
 
                         Integer color;
-                        if(!colorMap.containsKey(data.get(position).getSender().getUsername().toString()))
-                        {
-                            Random random = new Random();
-                            int r = random.nextInt(256);
-                            int g = random.nextInt(256);
-                            int b = random.nextInt(256);
-                            color = Color.rgb(r, g, b);
-                            colorMap.put(data.get(position).getSender().getUsername().toString(),color);
-                        }
-                        else
-                            color = colorMap.get(data.get(position).getSender().getUsername().toString());
 
+                        if(message.getChecked())
+                            color = Color.RED;
+                        else
+                        {
+                            if(!colorMap.containsKey(data.get(position).getSender().getUsername().toString()))
+                            {
+                                Random random = new Random();
+                                int r = random.nextInt(256);
+                                int g = random.nextInt(256);
+                                int b = random.nextInt(256);
+                                color = Color.rgb(r, g, b);
+                                colorMap.put(data.get(position).getSender().getUsername().toString(),color);
+                            }
+                            else
+                            {
+                                    color = colorMap.get(data.get(position).getSender().getUsername().toString());
+                            }
+                        }
                         Drawable mDrawable = getContext().getDrawable(R.drawable.bubble_other);
                         mDrawable.setColorFilter(new
                                 PorterDuffColorFilter(color, PorterDuff.Mode.OVERLAY));
@@ -418,10 +433,6 @@ public class ChannelDetailFragment extends Fragment {
                         state_view.setText(message.getMessage());
                     break;
             }
-            if (message.getChecked())
-                convertView.setBackgroundColor(Color.argb(50, 0, 0, 0));
-            else
-                convertView.setBackgroundColor(Color.argb(0, 255, 255, 255));
 
             return convertView;
         }

@@ -41,7 +41,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Profil");
-        toolbar.setSubtitle(user.getName());
+        toolbar.setSubtitle(user.getUsername());
         setSupportActionBar(toolbar);
         TextView textView = (TextView)findViewById(R.id.profile_name);
         mImageView = (ImageView)findViewById(R.id.profile_image);
@@ -104,7 +104,7 @@ public class ProfileActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.sd_card:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                photoPickerIntent.setType("image/*");
+                photoPickerIntent.setType("imageView/*");
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 return true;
 
@@ -118,7 +118,7 @@ public class ProfileActivity extends AppCompatActivity {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 String uri = clipboard.getText().toString();
                 if(uri.isEmpty() || !(uri.toString().contains(".jpg")^ uri.toString().contains(".png")))
-                     Toast.makeText(getApplicationContext(),"Kopierter Link ist nicht zulässig",Toast.LENGTH_SHORT).show();
+                     Toast.makeText(getApplicationContext(),"Kopierter Link ist nicht zulässig. Es funktionieren nur .png und .jpg Dateien",Toast.LENGTH_SHORT).show();
                 else
                     changeThumbnail(uri);
                 return true;
@@ -143,13 +143,12 @@ public class ProfileActivity extends AppCompatActivity {
 
     private OnHttpResultListener mUserListener = new OnHttpResultListener<User>() {
         @Override
-        public void onResult(User user) {
+        public void onResult(User temp) {
             StorageHelper.getInstance().storeObject("user",user);
             ImageView imageView = (ImageView)findViewById(R.id.profile_image);
             ImageLoader.getInstance().displayImage(user.getThumbnail(), imageView);
             TextView textView = (TextView)findViewById(R.id.profile_name);
             textView.setText(user.getName());
-
         }
 
         @Override

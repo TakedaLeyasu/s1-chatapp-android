@@ -46,10 +46,7 @@ public class HttpChangeUserDataTask extends AsyncTask<User, User, User> {
 
     @Override
     protected void onPostExecute(User user) {
-        if (user.hasToken())
             mListener.onResult(user);
-        else
-            mListener.onError(new Exception());
     }
 
 }
