@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import de.kabelskevalley.doegel.stroke.database.StorageHelper;
@@ -74,10 +76,7 @@ public class Message {
 
     private String getFreshTimestamp()
     {
-        Calendar cal = new GregorianCalendar();
-        int hour = cal.get(Calendar.HOUR_OF_DAY);
-        int min = cal.get(Calendar.MINUTE);
-
-        return String.valueOf(hour) + " : " + String.valueOf(min);
+        SimpleDateFormat s = new SimpleDateFormat("hh:mm");
+        return s.format(new Date());
     }
 }

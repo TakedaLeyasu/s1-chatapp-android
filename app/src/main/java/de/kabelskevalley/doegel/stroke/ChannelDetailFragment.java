@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.ClipboardManager;
@@ -369,14 +370,17 @@ public class ChannelDetailFragment extends Fragment {
                 case Chat:
                     if (message.isMyMessage()) {
                         convertView = inflater.inflate(R.layout.my_message_view, parent, false);
-                        if(message.getChecked()) {
-                            int color = Color.RED;
-                            Drawable mDrawable = getContext().getDrawable(R.drawable.bubble_own);
-                            mDrawable.setColorFilter(new
-                                    PorterDuffColorFilter(color, PorterDuff.Mode.OVERLAY));
-                            RelativeLayout my_message_layout = (RelativeLayout) convertView.findViewById(R.id.my_message_layout);
-                            my_message_layout.setBackground(mDrawable);
+
+                        Integer color;
+                        if(message.getChecked())
+                            color = Color.RED;
+                        else {
+                            color = getResources().getColor(R.color.colorPrimaryLight);
                         }
+
+                        RelativeLayout my_message_layout = (RelativeLayout)convertView.findViewById(R.id.my_message_layout);
+                        GradientDrawable bgShape = (GradientDrawable) my_message_layout.getBackground();
+                        bgShape.setColor(color);
                     } else {
                         convertView = inflater.inflate(R.layout.other_message_view, parent, false);
 
@@ -400,27 +404,26 @@ public class ChannelDetailFragment extends Fragment {
                             }
                             else
                             {
-                                    color = colorMap.get(data.get(position).getSender().getUsername().toString());
+                                color = colorMap.get(data.get(position).getSender().getUsername().toString());
                             }
                         }
-                        Drawable mDrawable = getContext().getDrawable(R.drawable.bubble_other);
-                        mDrawable.setColorFilter(new
-                                PorterDuffColorFilter(color, PorterDuff.Mode.OVERLAY));
+
                         RelativeLayout other_message_layout = (RelativeLayout)convertView.findViewById(R.id.other_message_layout);
-                        other_message_layout.setBackground(mDrawable);
+                        GradientDrawable bgShape = (GradientDrawable) other_message_layout.getBackground();
+                        bgShape.setColor(color);
                     }
 
                     TextView text_view = (TextView) convertView.findViewById(R.id.message_text_item);
                     TextView time_view = (TextView) convertView.findViewById(R.id.message_time_item);
-                    ImageView imageView = (ImageView) convertView.findViewById(R.id.message_image_item);
+//                    ImageView imageView = (ImageView) convertView.findViewById(R.id.message_image_item);
 
                     text_view.setText(message.getMessage());
                     time_view.setText(message.getTime());
 
-                    if (message.getSender().getThumbnail() != null)
-                        ImageLoader.getInstance().displayImage(message.getSender().getThumbnail(), imageView);
-                    else
-                        imageView.setImageResource(R.drawable.profilbild);
+//                    if (message.getSender().getThumbnail() != null)
+//                        ImageLoader.getInstance().displayImage(message.getSender().getThumbnail(), imageView);
+//                    else
+//                        imageView.setImageResource(R.drawable.profilbild);
                     break;
 
                 case Info:

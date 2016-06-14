@@ -53,6 +53,17 @@ public class ChannelListActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private ChannelsRecyclerViewAdapter mAdapter;
 
+    private OnHttpResultListener mDeleteListener = new OnHttpResultListener<Boolean>() {
+        @Override
+        public void onResult(Boolean result) {
+        }
+
+        @Override
+        public void onError(Exception e) {
+            Log.e("MainActivity", e.getMessage(), e);
+        }
+    };
+
     private OnHttpResultListener mChannelListener = new OnHttpResultListener<List<Channel>>() {
         @Override
         public void onResult(List<Channel> channels) {
@@ -78,7 +89,6 @@ public class ChannelListActivity extends AppCompatActivity {
             }
         }
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,9 +128,6 @@ public class ChannelListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-
-
-
     }
 
     @Override
@@ -193,10 +200,10 @@ public class ChannelListActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.delete:
                 if (mFavourites) {
-                    new HttpDeleteChannelTask(mChannelListener,mFavouritesList.get(mAdapter.getPosition()),mChannelList).execute();
+                    new HttpDeleteChannelTask(mDeleteListener, mFavouritesList.get(mAdapter.getPosition())).execute();
                     mFavouritesList.remove(mAdapter.getPosition());
                 } else {
-                    new HttpDeleteChannelTask(mChannelListener,mChannelList.get(mAdapter.getPosition()),mChannelList).execute();
+                    new HttpDeleteChannelTask(mDeleteListener, mChannelList.get(mAdapter.getPosition())).execute();
                     if(mFavouritesList.contains(mChannelList.get(mAdapter.getPosition())))
                         mFavouritesList.remove(mAdapter.getPosition());
                 }
@@ -252,7 +259,8 @@ public class ChannelListActivity extends AppCompatActivity {
             holder.mItem = mValues.get(position);
             holder.mContentView.setText(mValues.get(position).getName());
 
-            if (mValues.get(position).getThumbnail() != null) {
+            if (mValues.get(position).getThumbnail() != null
+                    && mValues.get(position).getThumbnail().trim() != "") {
                 ImageLoader.getInstance().displayImage(mValues.get(position).getThumbnail(), holder.mImageView);
             } else {
                 holder.mImageView.setImageResource(R.drawable.channel_picture);
